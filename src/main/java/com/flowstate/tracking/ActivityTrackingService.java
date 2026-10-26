@@ -38,6 +38,7 @@ public class ActivityTrackingService {
     // Optional category and exclusion resolver: maps app identifier to AppCategory
     private Function<String, AppCategory> categoryResolver = app -> AppCategory.NEUTRAL;
     private Function<String, Boolean> exclusionPredicate = app -> false;
+    private com.flowstate.analytics.DistractionAnalyzer distractionAnalyzer;
 
     private ScheduledFuture<?> pollingFuture;
     private final long pollIntervalMs;
@@ -119,6 +120,18 @@ public class ActivityTrackingService {
         }
     }
 
+    public void setDistractionAnalyzer(com.flowstate.analytics.DistractionAnalyzer analyzer) {
+        this.distractionAnalyzer = analyzer;
+        if (analyzer != null) {
+            this.categoryResolver = analyzer::resolveCategory;
+            this.exclusionPredicate = analyzer::isExcluded;
+        }
+    }
+
+    public com.flowstate.analytics.DistractionAnalyzer getDistractionAnalyzer() {
+        return distractionAnalyzer;
+    }
+
     public void addListener(ActivityChangeListener listener) {
         if (listener != null) {
             listeners.add(listener);
@@ -188,6 +201,15 @@ public class ActivityTrackingService {
                         processName, sample.windowTitle(), now, activeSessionId, category
                 );
                 currentActivity.set(newActivity);
+
+                // Interruption heuristic check during active focus session
+                if (sessionService != null && sessionService.hasActiveSession() && distractionAnalyzer != null) {
+                    AppCategory prevCategory = current.getActivityCategory();
+                    if (distractionAnalyzer.isDistraction(prevCategory, category)) {
+                        sessionService.recordInterruption();
+                    }
+                }
+
                 notifyActivityChanged(newActivity, current);
             }
         } catch (Exception e) {
