@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -23,7 +21,6 @@ import java.util.stream.Collectors;
  * (FileInputStream, FileOutputStream, BufferedInputStream, BufferedOutputStream).
  */
 public class ActivityStorage {
-    private static final Logger logger = LoggerFactory.getLogger(ActivityStorage.class);
     private static final ActivityStorage INSTANCE = new ActivityStorage();
 
     private final Path filePath;
@@ -62,7 +59,7 @@ public class ActivityStorage {
                 idSequence.set(maxId + 1);
             }
         } catch (Exception e) {
-            logger.warn("Storage initialization warning: {}", e.getMessage());
+            System.err.println("[ActivityStorage] Initialization warning: " + e.getMessage());
         }
     }
 
@@ -81,7 +78,7 @@ public class ActivityStorage {
                 return mapper.readValue(bis, new TypeReference<List<Activity>>() {});
             }
         } catch (Exception e) {
-            logger.error("Failed to read activities using FileInputStream: {}", e.getMessage());
+            System.err.println("[ActivityStorage] Failed to read activities: " + e.getMessage());
             return new ArrayList<>();
         } finally {
             lock.readLock().unlock();
@@ -100,7 +97,7 @@ public class ActivityStorage {
                 mapper.writeValue(bos, activities);
             }
         } catch (Exception e) {
-            logger.error("Failed to write activities using FileOutputStream: {}", e.getMessage());
+            System.err.println("[ActivityStorage] Failed to write activities: " + e.getMessage());
         } finally {
             lock.writeLock().unlock();
         }

@@ -17,8 +17,6 @@
         <maven.compiler.release>21</maven.compiler.release>
         <javafx.version>21.0.5</javafx.version>
         <jna.version>5.14.0</jna.version>
-        <slf4j.version>2.0.16</slf4j.version>
-        <logback.version>1.5.12</logback.version>
         <junit.version>5.11.3</junit.version>
         <assertj.version>3.26.3</assertj.version>
     </properties>
@@ -47,18 +45,6 @@
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna-platform</artifactId>
             <version>${jna.version}</version>
-        </dependency>
-
-        <!-- Logging: SLF4J + Logback -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
         </dependency>
 
         <!-- JSON File Storage (Jackson) -->

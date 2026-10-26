@@ -6,25 +6,22 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Main Application Entry Point and JavaFX Stage Controller.
  */
 public class FlowStateApp extends Application {
-    private static final Logger logger = LoggerFactory.getLogger(FlowStateApp.class);
 
     @Override
     public void start(Stage primaryStage) {
-        logger.info("Starting FlowState Desktop Application...");
+        System.out.println("[FlowState] Starting Desktop Application...");
 
         // Start background native Windows tracking
         ActivityTracker.getInstance().start();
 
         // Register clean JVM shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("JVM exiting. Stopping background ActivityTracker...");
+            System.out.println("[FlowState] JVM exiting. Stopping background ActivityTracker...");
             ActivityTracker.getInstance().shutdown();
         }));
 
@@ -46,9 +43,9 @@ public class FlowStateApp extends Application {
             });
 
             primaryStage.show();
-            logger.info("FlowState GUI successfully launched.");
+            System.out.println("[FlowState] GUI successfully launched.");
         } catch (Exception e) {
-            logger.error("Failed to load user interface: {}", e.getMessage(), e);
+            System.err.println("[FlowState] Failed to load user interface: " + e.getMessage());
         }
     }
 

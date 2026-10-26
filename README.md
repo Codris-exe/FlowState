@@ -81,12 +81,10 @@ FlowState supports **two persistence backends** via clean repository interfaces 
 | **Language** | Java | 21 (LTS) | Core application business logic, concurrency, OOP |
 | **GUI Framework** | JavaFX | 21.0.5 | Desktop user interface, controls, charts, animations |
 | **Layouts & Styling**| FXML & CSS | — | Declarative UI structure and dark navy/charcoal styling |
-| **Database** | PostgreSQL | 14+ / 18 | Relational persistent storage |
-| **Connectivity** | JDBC | 42.7.4 | Native relational database communication |
-| **Connection Pool** | HikariCP | 6.0.0 | High-performance, low-latency connection management |
+| **Storage** | File Streams (Jackson JSON) | 2.17.1 | Local file I/O with FileInputStream/FileOutputStream |
 | **Native OS Access** | JNA & JNA Platform | 5.14.0 | Direct Win32 User32/Kernel32 native API calls |
-| **Logging** | SLF4J & Logback | 2.0.16 / 1.5.12 | Structured logging with rolling file appenders |
-| **Testing** | JUnit 5 & AssertJ | 5.11.3 / 3.26.3 | Unit, concurrency, and integration test suites |
+| **Logging** | Standard Java I/O | — | System.out & System.err console diagnostics |
+| **Testing** | JUnit 5 & AssertJ | 5.11.3 / 3.26.3 | Automated unit test suite |
 | **Build Tool** | Apache Maven | 3.9+ | Dependency management and compilation |
 
 ---

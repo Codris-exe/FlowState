@@ -11,8 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -27,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
  * Main UI Controller managing Dashboard, Activity Timeline, and Analytics tabs.
  */
 public class MainController {
-    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     // Sidebar
     @FXML private Button btnNavDashboard;

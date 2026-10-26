@@ -7,8 +7,6 @@ import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.ptr.IntByReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.Instant;
@@ -21,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * Background activity tracker that samples the active foreground window using Win32 JNA APIs.
  */
 public class ActivityTracker {
-    private static final Logger logger = LoggerFactory.getLogger(ActivityTracker.class);
     private static final ActivityTracker INSTANCE = new ActivityTracker();
 
     private final boolean isWindows;
@@ -58,17 +55,17 @@ public class ActivityTracker {
     public synchronized void start() {
         if (pollingFuture != null && !pollingFuture.isCancelled()) return;
         if (!isWindows) {
-            logger.warn("Native tracking only supported on Windows OS.");
+            System.err.println("[ActivityTracker] Native tracking only supported on Windows OS.");
             return;
         }
 
-        logger.info("Starting background ActivityTracker (sampling every 1.5s)");
+        System.out.println("[ActivityTracker] Starting background tracking (1.5s interval)...");
         pollingFuture = scheduler.scheduleWithFixedDelay(this::pollForegroundWindow, 0, 1500, TimeUnit.MILLISECONDS);
     }
 
     public synchronized void pauseTracking() {
         if (trackingEnabled.compareAndSet(true, false)) {
-            logger.info("Activity tracking paused by user");
+            System.out.println("[ActivityTracker] Tracking paused by user");
             finalizeCurrentActivity(Instant.now());
             notifyListeners();
         }
@@ -76,7 +73,7 @@ public class ActivityTracker {
 
     public synchronized void resumeTracking() {
         if (trackingEnabled.compareAndSet(false, true)) {
-            logger.info("Activity tracking resumed by user");
+            System.out.println("[ActivityTracker] Tracking resumed by user");
             notifyListeners();
         }
     }
@@ -136,8 +133,7 @@ public class ActivityTracker {
                 currentActivity.set(newAct);
                 notifyListeners();
             }
-        } catch (Exception e) {
-            logger.debug("Sampling exception: {}", e.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
@@ -147,7 +143,7 @@ public class ActivityTracker {
             prev.close(now);
             if (storage != null) {
                 storage.save(prev);
-                logger.info("Saved finalized activity: {} ({}s)", prev.getApplicationName(), prev.getDurationSeconds());
+                System.out.println("[ActivityTracker] Saved activity: " + prev.getApplicationName() + " (" + prev.getDurationSeconds() + "s)");
             }
         }
     }
