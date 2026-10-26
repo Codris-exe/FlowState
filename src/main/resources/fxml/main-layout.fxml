@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane fx:id="mainRoot" prefHeight="760.0" prefWidth="1200.0" styleClass="app-window"
+<BorderPane prefHeight="760.0" prefWidth="1200.0" styleClass="app-window"
             stylesheets="@../css/flowstate-theme.css"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.flowstate.ui.NavigationController">
+            fx:controller="com.flowstate.MainController">
 
-    <!-- Persistent Left Sidebar (Deep Focus / RIZE Minimal Style) -->
+    <!-- Persistent Left Sidebar -->
     <left>
         <VBox prefWidth="240.0" spacing="8.0" styleClass="sidebar">
             <padding>
@@ -29,19 +38,17 @@
             </HBox>
 
             <Region prefHeight="16.0"/>
-
-            <!-- Sidebar Navigation Category Header -->
             <Label styleClass="sidebar-section-header" text="NAVIGATION"/>
 
-            <!-- Core 3 Navigation Items -->
+            <!-- 3 Core Navigation Items -->
             <VBox spacing="6.0" VBox.vgrow="ALWAYS">
-                <Button fx:id="btnDashboard" maxWidth="Infinity" onAction="#handleNavDashboard"
+                <Button fx:id="btnNavDashboard" maxWidth="Infinity" onAction="#handleNavDashboard"
                         styleClass="nav-button, active" text="📊  Dashboard"/>
 
-                <Button fx:id="btnActivityMonitor" maxWidth="Infinity" onAction="#handleNavActivityMonitor"
+                <Button fx:id="btnNavTimeline" maxWidth="Infinity" onAction="#handleNavTimeline"
                         styleClass="nav-button" text="🌐  Activity Timeline"/>
 
-                <Button fx:id="btnAnalytics" maxWidth="Infinity" onAction="#handleNavAnalytics"
+                <Button fx:id="btnNavAnalytics" maxWidth="Infinity" onAction="#handleNavAnalytics"
                         styleClass="nav-button" text="📈  Analytics"/>
             </VBox>
 
@@ -59,9 +66,262 @@
         </VBox>
     </left>
 
-    <!-- Main Content Container -->
+    <!-- Main Content Area: StackPane switching views directly -->
     <center>
-        <StackPane fx:id="contentArea" styleClass="content-area"/>
+        <StackPane styleClass="content-area">
+
+            <!-- 1. DASHBOARD VIEW -->
+            <ScrollPane fx:id="viewDashboard" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+                <VBox spacing="20.0">
+                    <padding>
+                        <Insets bottom="24.0" right="12.0"/>
+                    </padding>
+
+                    <!-- Top Greeting Header -->
+                    <HBox alignment="CENTER_LEFT" spacing="16.0">
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label fx:id="lblGreeting" styleClass="view-title" text="Good day!"/>
+                            <Label fx:id="lblCurrentDate" styleClass="view-subtitle" text="Today is Monday, October 26, 2026"/>
+                        </VBox>
+                        <Label styleClass="date-pill" text="⚡ Real-Time Tracking Active"/>
+                    </HBox>
+
+                    <!-- Daily Goal Card -->
+                    <VBox spacing="8.0" styleClass="card">
+                        <HBox alignment="CENTER_LEFT">
+                            <Label styleClass="card-title" text="Daily Productive Focus Goal"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="lblGoalProgressText" style="-fx-font-weight: bold; -fx-text-fill: #A78BFA;" text="0 / 120 mins (0%)"/>
+                        </HBox>
+                        <ProgressBar fx:id="pbDailyGoal" maxWidth="Infinity" progress="0.0"/>
+                    </VBox>
+
+                    <!-- 4 Metric Cards -->
+                    <GridPane hgap="16.0" vgap="16.0">
+                        <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Productive Time"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label styleClass="card-icon" text="⏱"/>
+                            </HBox>
+                            <Label fx:id="lblTodayProductive" styleClass="card-value" text="0m"/>
+                            <Label styleClass="card-subtext" text="In productive tools"/>
+                        </VBox>
+
+                        <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Active Apps"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label styleClass="card-icon" text="💻"/>
+                            </HBox>
+                            <Label fx:id="lblActiveAppsCount" styleClass="card-value" text="0"/>
+                            <Label styleClass="card-subtext" text="Tracked applications"/>
+                        </VBox>
+
+                        <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Distraction Time"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label styleClass="card-icon" text="⚠️"/>
+                            </HBox>
+                            <Label fx:id="lblTodayDistracting" styleClass="card-value" style="-fx-text-fill: #F87171;" text="0m"/>
+                            <Label styleClass="card-subtext" text="In distracting apps"/>
+                        </VBox>
+
+                        <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="3" GridPane.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Focus Ratio"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label styleClass="card-icon" text="↗"/>
+                            </HBox>
+                            <Label fx:id="lblTodayFocusRatio" styleClass="card-value" style="-fx-text-fill: #10B981;" text="0%"/>
+                            <Label styleClass="card-subtext" text="Productive percentage"/>
+                        </VBox>
+                    </GridPane>
+
+                    <!-- Weekly Chart & Top Apps Split -->
+                    <HBox spacing="16.0">
+                        <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="540.0">
+                            <Label styleClass="card-title" text="WEEKLY PRODUCTIVE VOLUME (MINUTES)"/>
+                            <BarChart fx:id="chartWeeklyFocus" animated="false" legendVisible="false" prefHeight="220.0">
+                                <xAxis>
+                                    <CategoryAxis side="BOTTOM"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Minutes" side="LEFT"/>
+                                </yAxis>
+                            </BarChart>
+                        </VBox>
+
+                        <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="420.0">
+                            <Label styleClass="card-title" text="MOST-USED APPLICATIONS TODAY"/>
+                            <TableView fx:id="tableTopApps" prefHeight="220.0">
+                                <columns>
+                                    <TableColumn fx:id="colAppName" prefWidth="240.0" text="Application"/>
+                                    <TableColumn fx:id="colAppDuration" prefWidth="140.0" text="Duration"/>
+                                </columns>
+                                <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                </columnResizePolicy>
+                            </TableView>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Recent Activities Table -->
+                    <VBox spacing="10.0" styleClass="card">
+                        <Label styleClass="card-title" text="RECENT APPLICATION ACTIVITIES"/>
+                        <TableView fx:id="tableDashboardRecent" prefHeight="180.0">
+                            <columns>
+                                <TableColumn fx:id="colDashApp" prefWidth="180.0" text="Process"/>
+                                <TableColumn fx:id="colDashTitle" prefWidth="380.0" text="Window Title"/>
+                                <TableColumn fx:id="colDashDuration" prefWidth="120.0" text="Duration"/>
+                                <TableColumn fx:id="colDashCategory" prefWidth="120.0" text="Category"/>
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            </columnResizePolicy>
+                        </TableView>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+
+            <!-- 2. ACTIVITY TIMELINE VIEW (RIZE Style) -->
+            <ScrollPane fx:id="viewTimeline" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" visible="false">
+                <VBox spacing="20.0">
+                    <padding>
+                        <Insets bottom="24.0" right="12.0"/>
+                    </padding>
+
+                    <!-- Header -->
+                    <HBox alignment="CENTER_LEFT" spacing="16.0">
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <Label styleClass="view-title" text="Activity Timeline"/>
+                                <Label styleClass="date-pill" text="Live Window Spotlight"/>
+                            </HBox>
+                            <Label styleClass="view-subtitle" text="Real-time native Windows foreground detection and activity stream"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Active Spotlight Card -->
+                    <VBox spacing="14.0" styleClass="card" style="-fx-border-color: #8B5CF6; -fx-border-width: 1px 1px 1px 4px;">
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <Circle fill="#10B981" radius="4.0"/>
+                            <Label styleClass="card-title" text="ACTIVE FOREGROUND APPLICATION"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="lblSpotlightBadge" styleClass="badge-productive" text="PRODUCTIVE"/>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16.0">
+                            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                <Label fx:id="lblSpotlightProcess" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;" text="code.exe"/>
+                                <Label fx:id="lblSpotlightTitle" style="-fx-font-size: 13px; -fx-text-fill: #9CA3AF;" text="FlowState — Visual Studio Code"/>
+                            </VBox>
+                            <VBox alignment="CENTER_RIGHT" spacing="2.0">
+                                <Label styleClass="card-subtext" text="CURRENT INTERVAL"/>
+                                <Label fx:id="lblSpotlightDuration" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #A78BFA; -fx-font-family: monospace;" text="02m 14s"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Timeline Stream Table -->
+                    <VBox spacing="10.0" styleClass="card">
+                        <Label styleClass="card-title" text="LOGGED ACTIVITY STREAM"/>
+                        <TableView fx:id="tableTimelineStream" prefHeight="420.0">
+                            <columns>
+                                <TableColumn fx:id="colTimeApp" prefWidth="180.0" text="Process / App"/>
+                                <TableColumn fx:id="colTimeTitle" prefWidth="380.0" text="Window Title"/>
+                                <TableColumn fx:id="colTimeStarted" prefWidth="120.0" text="Started At"/>
+                                <TableColumn fx:id="colTimeDuration" prefWidth="110.0" text="Duration"/>
+                                <TableColumn fx:id="colTimeCategory" prefWidth="110.0" text="Category"/>
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            </columnResizePolicy>
+                        </TableView>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+
+            <!-- 3. ANALYTICS VIEW (Deep Focus Style) -->
+            <ScrollPane fx:id="viewAnalytics" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" visible="false">
+                <VBox spacing="20.0">
+                    <padding>
+                        <Insets bottom="24.0" right="12.0"/>
+                    </padding>
+
+                    <!-- Header -->
+                    <VBox spacing="4.0">
+                        <Label styleClass="view-title" text="Analytics"/>
+                        <Label styleClass="view-subtitle" text="Visualize your application usage and productivity trends"/>
+                    </VBox>
+
+                    <!-- 4 Stat Cards -->
+                    <GridPane hgap="16.0" vgap="16.0">
+                        <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Activity Logs"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label styleClass="card-icon" text="🎯"/>
+                            </HBox>
+                            <Label fx:id="lblAnalyticLogs" styleClass="card-value" text="0 logs"/>
+                            <Label styleClass="card-subtext" text="Recorded window intervals"/>
+                        </VBox>
+
+                        <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Total Active Time"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label styleClass="card-icon" text="⏱"/>
+                            </HBox>
+                            <Label fx:id="lblAnalyticTotalTime" styleClass="card-value" text="0m"/>
+                            <Label styleClass="card-subtext" text="Across all applications"/>
+                        </VBox>
+
+                        <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Productive Time"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label styleClass="card-icon" text="⚡"/>
+                            </HBox>
+                            <Label fx:id="lblAnalyticProductiveTime" styleClass="card-value" style="-fx-text-fill: #10B981;" text="0m"/>
+                            <Label styleClass="card-subtext" text="In work &amp; study tools"/>
+                        </VBox>
+
+                        <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="3" GridPane.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Focus Ratio"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label styleClass="card-icon" text="↗"/>
+                            </HBox>
+                            <Label fx:id="lblAnalyticFocusRatio" styleClass="card-value" style="-fx-text-fill: #A78BFA;" text="0%"/>
+                            <Label styleClass="card-subtext" text="Productive percentage"/>
+                        </VBox>
+                    </GridPane>
+
+                    <!-- Chart Row -->
+                    <HBox spacing="16.0">
+                        <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="540.0">
+                            <Label styleClass="card-title" text="DAILY TRACKED TIME (MINUTES)"/>
+                            <BarChart fx:id="chartAnalyticsTrend" animated="false" legendVisible="false" prefHeight="260.0">
+                                <xAxis>
+                                    <CategoryAxis side="BOTTOM"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Minutes" side="LEFT"/>
+                                </yAxis>
+                            </BarChart>
+                        </VBox>
+
+                        <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="420.0">
+                            <Label styleClass="card-title" text="APPLICATION CATEGORY DISTRIBUTION"/>
+                            <PieChart fx:id="chartAnalyticsPie" animated="false" legendVisible="true" prefHeight="260.0"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+
+        </StackPane>
     </center>
 
 </BorderPane>

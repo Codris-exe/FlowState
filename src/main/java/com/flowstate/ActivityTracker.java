@@ -1,0 +1,195 @@
+package com.flowstate;
+
+import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.Psapi;
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef.HWND;
+import com.sun.jna.platform.win32.WinNT;
+import com.sun.jna.platform.win32.WinNT.HANDLE;
+import com.sun.jna.ptr.IntByReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * Background activity tracker that samples the active foreground window using Win32 JNA APIs.
+ */
+public class ActivityTracker {
+    private static final Logger logger = LoggerFactory.getLogger(ActivityTracker.class);
+    private static final ActivityTracker INSTANCE = new ActivityTracker();
+
+    private final boolean isWindows;
+    private final ActivityStorage storage;
+    private final DistractionAnalyzer analyzer;
+    private final ScheduledExecutorService scheduler;
+
+    private final AtomicBoolean trackingEnabled = new AtomicBoolean(true);
+    private final AtomicReference<Activity> currentActivity = new AtomicReference<>(null);
+    private final List<Runnable> changeListeners = new CopyOnWriteArrayList<>();
+
+    private ScheduledFuture<?> pollingFuture;
+
+    public ActivityTracker() {
+        this(ActivityStorage.getInstance(), DistractionAnalyzer.getInstance(),
+                Executors.newSingleThreadScheduledExecutor(r -> {
+                    Thread t = new Thread(r, "FlowState-Tracker");
+                    t.setDaemon(true);
+                    return t;
+                }));
+    }
+
+    public ActivityTracker(ActivityStorage storage, DistractionAnalyzer analyzer, ScheduledExecutorService scheduler) {
+        this.storage = storage;
+        this.analyzer = analyzer;
+        this.scheduler = scheduler;
+        this.isWindows = System.getProperty("os.name", "").toLowerCase().contains("win");
+    }
+
+    public static ActivityTracker getInstance() {
+        return INSTANCE;
+    }
+
+    public synchronized void start() {
+        if (pollingFuture != null && !pollingFuture.isCancelled()) return;
+        if (!isWindows) {
+            logger.warn("Native tracking only supported on Windows OS.");
+            return;
+        }
+
+        logger.info("Starting background ActivityTracker (sampling every 1.5s)");
+        pollingFuture = scheduler.scheduleWithFixedDelay(this::pollForegroundWindow, 0, 1500, TimeUnit.MILLISECONDS);
+    }
+
+    public synchronized void pauseTracking() {
+        if (trackingEnabled.compareAndSet(true, false)) {
+            logger.info("Activity tracking paused by user");
+            finalizeCurrentActivity(Instant.now());
+            notifyListeners();
+        }
+    }
+
+    public synchronized void resumeTracking() {
+        if (trackingEnabled.compareAndSet(false, true)) {
+            logger.info("Activity tracking resumed by user");
+            notifyListeners();
+        }
+    }
+
+    public boolean isTrackingEnabled() {
+        return trackingEnabled.get();
+    }
+
+    public Activity getCurrentActivity() {
+        return currentActivity.get();
+    }
+
+    public void addChangeListener(Runnable listener) {
+        if (listener != null) changeListeners.add(listener);
+    }
+
+    public void pollForegroundWindow() {
+        if (!trackingEnabled.get() || !isWindows) return;
+
+        try {
+            HWND hwnd = User32.INSTANCE.GetForegroundWindow();
+            if (hwnd == null) return;
+
+            // 1. Window title
+            char[] titleBuffer = new char[512];
+            int titleLen = User32.INSTANCE.GetWindowText(hwnd, titleBuffer, 512);
+            String title = titleLen > 0 ? new String(titleBuffer, 0, titleLen).trim() : "";
+
+            // 2. Process ID
+            IntByReference pidRef = new IntByReference();
+            User32.INSTANCE.GetWindowThreadProcessId(hwnd, pidRef);
+            int pid = pidRef.getValue();
+            if (pid <= 0) return;
+
+            // 3. Process image name
+            String processName = getProcessName(pid);
+            Instant now = Instant.now();
+
+            Activity current = currentActivity.get();
+            if (current == null) {
+                Activity.Category cat = analyzer.resolveCategory(processName);
+                Activity newAct = new Activity(processName, title, now, cat);
+                currentActivity.set(newAct);
+                notifyListeners();
+                return;
+            }
+
+            boolean sameApp = processName.equalsIgnoreCase(current.getApplicationName());
+            boolean sameTitle = title.equals(current.getWindowTitle());
+
+            if (sameApp && sameTitle) {
+                current.close(now);
+            } else {
+                finalizeCurrentActivity(now);
+                Activity.Category cat = analyzer.resolveCategory(processName);
+                Activity newAct = new Activity(processName, title, now, cat);
+                currentActivity.set(newAct);
+                notifyListeners();
+            }
+        } catch (Exception e) {
+            logger.debug("Sampling exception: {}", e.getMessage());
+        }
+    }
+
+    private void finalizeCurrentActivity(Instant now) {
+        Activity prev = currentActivity.getAndSet(null);
+        if (prev != null) {
+            prev.close(now);
+            if (storage != null) {
+                storage.save(prev);
+                logger.info("Saved finalized activity: {} ({}s)", prev.getApplicationName(), prev.getDurationSeconds());
+            }
+        }
+    }
+
+    private String getProcessName(int pid) {
+        int desiredAccess = WinNT.PROCESS_QUERY_LIMITED_INFORMATION;
+        HANDLE handle = Kernel32.INSTANCE.OpenProcess(desiredAccess, false, pid);
+        if (handle == null) {
+            desiredAccess = WinNT.PROCESS_QUERY_INFORMATION | WinNT.PROCESS_VM_READ;
+            handle = Kernel32.INSTANCE.OpenProcess(desiredAccess, false, pid);
+        }
+        if (handle == null) return "System";
+
+        try {
+            char[] path = new char[1024];
+            int len = Psapi.INSTANCE.GetModuleFileNameExW(handle, null, path, 1024);
+            if (len > 0) {
+                return new File(new String(path, 0, len)).getName();
+            }
+        } catch (Exception ignored) {
+        } finally {
+            Kernel32.INSTANCE.CloseHandle(handle);
+        }
+        return "System";
+    }
+
+    private void notifyListeners() {
+        for (Runnable r : changeListeners) {
+            try {
+                r.run();
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public synchronized void shutdown() {
+        if (pollingFuture != null) {
+            pollingFuture.cancel(false);
+            pollingFuture = null;
+        }
+        finalizeCurrentActivity(Instant.now());
+        if (!scheduler.isShutdown()) {
+            scheduler.shutdownNow();
+        }
+    }
+}

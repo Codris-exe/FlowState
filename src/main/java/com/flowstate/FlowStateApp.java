@@ -1,10 +1,5 @@
 package com.flowstate;
 
-import com.flowstate.analytics.DistractionAnalyzer;
-import com.flowstate.service.LifecycleManager;
-import com.flowstate.storage.FileStorageManager;
-import com.flowstate.storage.RepositoryFactory;
-import com.flowstate.tracking.ActivityTrackingService;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -15,36 +10,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Main JavaFX Desktop Application entry point for FlowState.
+ * Main Application Entry Point and JavaFX Stage Controller.
  */
 public class FlowStateApp extends Application {
     private static final Logger logger = LoggerFactory.getLogger(FlowStateApp.class);
 
-    private Stage primaryStage;
-
     @Override
     public void start(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+        logger.info("Starting FlowState Desktop Application...");
 
-        logger.info("Initializing FlowState Desktop Application...");
+        // Start background native Windows tracking
+        ActivityTracker.getInstance().start();
 
-        // 1. Initialize Local File Storage Directory
-        FileStorageManager.getInstance().initialize();
+        // Register clean JVM shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("JVM exiting. Stopping background ActivityTracker...");
+            ActivityTracker.getInstance().shutdown();
+        }));
 
-        // 2. Wire Tracking Service with Distraction Analyzer and Activity Repository
-        DistractionAnalyzer distractionAnalyzer = new DistractionAnalyzer(RepositoryFactory.getApplicationPreferenceRepository());
-
-        ActivityTrackingService trackingService = ActivityTrackingService.getInstance();
-        trackingService.setActivityRepository(RepositoryFactory.getActivityRepository());
-        trackingService.setDistractionAnalyzer(distractionAnalyzer);
-        // Start native background tracking
-        trackingService.start();
-
-        // 3. Launch Main Application Stage
-        launchMainUi();
-    }
-
-    private void launchMainUi() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-layout.fxml"));
             Parent root = loader.load();
@@ -58,25 +41,15 @@ public class FlowStateApp extends Application {
             primaryStage.setScene(scene);
 
             primaryStage.setOnCloseRequest(event -> {
-                logger.info("Application window close requested. Shutting down background tasks...");
-                shutdownServices();
+                ActivityTracker.getInstance().shutdown();
                 Platform.exit();
             });
 
             primaryStage.show();
-            logger.info("FlowState Desktop Application launched successfully.");
+            logger.info("FlowState GUI successfully launched.");
         } catch (Exception e) {
-            logger.error("Failed to load main layout: {}", e.getMessage(), e);
+            logger.error("Failed to load user interface: {}", e.getMessage(), e);
         }
-    }
-
-    @Override
-    public void stop() {
-        shutdownServices();
-    }
-
-    private void shutdownServices() {
-        LifecycleManager.getInstance().shutdownAll();
     }
 
     public static void main(String[] args) {
