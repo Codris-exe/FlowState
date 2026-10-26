@@ -3,6 +3,7 @@ package com.flowstate.service;
 import com.flowstate.model.FocusSession;
 import com.flowstate.model.SessionCategory;
 import com.flowstate.model.SessionStatus;
+import com.flowstate.repository.FocusSessionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,7 @@ public class FocusSessionService {
 
     private final AtomicReference<FocusSession> activeSession = new AtomicReference<>(null);
     private final List<FocusSessionListener> listeners = new CopyOnWriteArrayList<>();
+    private FocusSessionRepository repository;
 
     private final ScheduledExecutorService tickerExecutor;
     private final boolean ownsExecutor;
@@ -32,20 +34,37 @@ public class FocusSessionService {
             Thread t = new Thread(r, "FlowState-FocusTimer");
             t.setDaemon(true);
             return t;
-        }), true);
+        }), true, null);
+    }
+
+    public FocusSessionService(FocusSessionRepository repository) {
+        this(Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "FlowState-FocusTimer");
+            t.setDaemon(true);
+            return t;
+        }), true, repository);
     }
 
     public FocusSessionService(ScheduledExecutorService tickerExecutor) {
-        this(tickerExecutor, false);
+        this(tickerExecutor, false, null);
     }
 
-    private FocusSessionService(ScheduledExecutorService tickerExecutor, boolean ownsExecutor) {
+    public FocusSessionService(ScheduledExecutorService tickerExecutor, boolean ownsExecutor, FocusSessionRepository repository) {
         this.tickerExecutor = Objects.requireNonNull(tickerExecutor, "tickerExecutor must not be null");
         this.ownsExecutor = ownsExecutor;
+        this.repository = repository;
     }
 
     public static FocusSessionService getInstance() {
         return INSTANCE;
+    }
+
+    public void setRepository(FocusSessionRepository repository) {
+        this.repository = repository;
+    }
+
+    public FocusSessionRepository getRepository() {
+        return repository;
     }
 
     /**
@@ -61,6 +80,15 @@ public class FocusSessionService {
 
         FocusSession session = new FocusSession(title, category, targetDurationSeconds);
         session.start(Instant.now());
+
+        if (repository != null) {
+            try {
+                repository.save(session);
+            } catch (Exception e) {
+                logger.error("Failed to persist new focus session to database: {}", e.getMessage());
+            }
+        }
+
         activeSession.set(session);
 
         logger.info("Started focus session: id={}, title='{}', target={}s", session.getId(), session.getTitle(), targetDurationSeconds);
@@ -82,6 +110,13 @@ public class FocusSessionService {
         }
 
         session.pause(Instant.now());
+        if (repository != null && session.getId() != null) {
+            try {
+                repository.update(session);
+            } catch (Exception e) {
+                logger.warn("Failed to update paused session in database: {}", e.getMessage());
+            }
+        }
         logger.info("Paused focus session: '{}'", session.getTitle());
         notifySessionPaused(session);
     }
@@ -98,6 +133,13 @@ public class FocusSessionService {
         }
 
         session.resume(Instant.now());
+        if (repository != null && session.getId() != null) {
+            try {
+                repository.update(session);
+            } catch (Exception e) {
+                logger.warn("Failed to update resumed session in database: {}", e.getMessage());
+            }
+        }
         logger.info("Resumed focus session: '{}'", session.getTitle());
         notifySessionResumed(session);
     }
@@ -118,6 +160,19 @@ public class FocusSessionService {
             session.setNotes(notes.trim());
         }
         session.complete(Instant.now());
+
+        if (repository != null) {
+            try {
+                if (session.getId() != null) {
+                    repository.update(session);
+                } else {
+                    repository.save(session);
+                }
+            } catch (Exception e) {
+                logger.error("Failed to persist completed focus session: {}", e.getMessage());
+            }
+        }
+
         activeSession.set(null);
 
         logger.info("Completed focus session: '{}' with actual duration {}s", session.getTitle(), session.getActualDurationSeconds());
@@ -136,6 +191,15 @@ public class FocusSessionService {
 
         stopTicker();
         session.cancel(Instant.now());
+
+        if (repository != null && session.getId() != null) {
+            try {
+                repository.update(session);
+            } catch (Exception e) {
+                logger.error("Failed to update cancelled focus session: {}", e.getMessage());
+            }
+        }
+
         activeSession.set(null);
 
         logger.info("Cancelled focus session: '{}'", session.getTitle());
