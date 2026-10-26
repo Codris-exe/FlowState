@@ -2,7 +2,20 @@
 
 A native Java 21 desktop application designed to help developers, students, and knowledge workers understand their computer usage, track deep-work focus sessions, eliminate digital distractions, and analyze productivity trends.
 
-Developed as a college-level **B.Tech Computer Science & Engineering (CSE)** capstone project, FlowState demonstrates advanced Java Object-Oriented Programming (OOP), multithreading, concurrency synchronization, PostgreSQL JDBC persistence, high-performance Java NIO file operations, native Windows integration via JNA, and modern JavaFX UI/UX design.
+Developed as a college-level **B.Tech Computer Science & Engineering (CSE)** capstone project, FlowState demonstrates advanced Java Object-Oriented Programming (OOP), multithreading, concurrency synchronization, high-performance Java I/O Streams (`FileInputStream`, `FileOutputStream`, `BufferedInputStream`, `BufferedOutputStream`), native Windows integration via JNA, modern JavaFX UI/UX design, and optional PostgreSQL JDBC persistence.
+
+---
+
+## 💾 Storage Architecture: Zero-Setup File Storage
+
+FlowState supports **two persistence backends** via clean repository interfaces (`RepositoryFactory`):
+
+1. **File Storage with Java I/O Streams (Default & Zero Setup)**:
+   - Persists all focus sessions, application activities, and preferences to local structured files in `./data/`.
+   - Uses low-level **`FileInputStream`**, **`BufferedInputStream`**, **`FileOutputStream`**, and **`BufferedOutputStream`** to demonstrate foundational Java I/O stream mechanics.
+   - Requires **zero external database setup**, no server installation, and runs out-of-the-box on any computer.
+2. **PostgreSQL Database (Optional Enterprise Mode)**:
+   - For environments where a relational database server is desired, FlowState includes complete JDBC DAO implementations with HikariCP connection pooling and automatic schema initialization.
 
 ---
 
@@ -100,11 +113,13 @@ Before running FlowState, verify your system has:
    ```bash
    mvn -version
    ```
-3. **PostgreSQL 14+** service running locally or accessible via network.
+*(No database installation is required by default! Data is stored automatically in `./data/` using Java I/O Streams).*
 
 ---
 
-## 🗄️ PostgreSQL Database Setup
+## 🗄️ Database Setup (Optional — Only if using PostgreSQL mode)
+
+FlowState runs out-of-the-box using Java file streams. If you wish to switch to PostgreSQL mode:
 
 ### Step 1: Create Database
 Open `psql` or pgAdmin and run:
@@ -144,7 +159,7 @@ You **do not** need to execute manual SQL DDL commands! On startup, `DatabaseMan
 ```bash
 mvn clean test
 ```
-*Executes all 36 unit tests across repositories, services, concurrency stress tests, and UI models.*
+*Executes all 42 unit & integration tests across file streams, repositories, services, concurrency stress tests, and UI models.*
 
 ### 2. Launch the Desktop Application
 ```bash
