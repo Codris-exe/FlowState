@@ -91,7 +91,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.flowstate.Main</mainClass>
+                    <mainClass>com.flowstate.FlowStateApp</mainClass>
                 </configuration>
             </plugin>
         </plugins>
