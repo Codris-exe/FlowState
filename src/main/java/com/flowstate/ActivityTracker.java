@@ -15,9 +15,6 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Background activity tracker that samples the active foreground window using Win32 JNA APIs.
- */
 public class ActivityTracker {
     private static final ActivityTracker INSTANCE = new ActivityTracker();
 
@@ -97,18 +94,15 @@ public class ActivityTracker {
             HWND hwnd = User32.INSTANCE.GetForegroundWindow();
             if (hwnd == null) return;
 
-            // 1. Window title
             char[] titleBuffer = new char[512];
             int titleLen = User32.INSTANCE.GetWindowText(hwnd, titleBuffer, 512);
             String title = titleLen > 0 ? new String(titleBuffer, 0, titleLen).trim() : "";
 
-            // 2. Process ID
             IntByReference pidRef = new IntByReference();
             User32.INSTANCE.GetWindowThreadProcessId(hwnd, pidRef);
             int pid = pidRef.getValue();
             if (pid <= 0) return;
 
-            // 3. Process image name
             String processName = getProcessName(pid);
             Instant now = Instant.now();
 

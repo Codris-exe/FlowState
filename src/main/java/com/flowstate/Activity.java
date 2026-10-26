@@ -5,9 +5,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * Data model representing a recorded application window activity interval.
- */
 public class Activity implements Serializable {
     private static final long serialVersionUID = 1L;
 

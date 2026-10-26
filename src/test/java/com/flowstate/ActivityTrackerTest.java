@@ -24,12 +24,10 @@ class ActivityTrackerTest {
 
         assertThat(tracker.isTrackingEnabled()).isTrue();
 
-        // Pause
         tracker.pauseTracking();
         assertThat(tracker.isTrackingEnabled()).isFalse();
         assertThat(notified.get()).isTrue();
 
-        // Resume
         notified.set(false);
         tracker.resumeTracking();
         assertThat(tracker.isTrackingEnabled()).isTrue();

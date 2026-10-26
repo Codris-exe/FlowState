@@ -21,12 +21,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Main UI Controller managing Dashboard, Activity Timeline, and Analytics tabs.
- */
 public class MainController {
 
-    // Sidebar
     @FXML private Button btnNavDashboard;
     @FXML private Button btnNavTimeline;
     @FXML private Button btnNavAnalytics;
@@ -34,12 +30,10 @@ public class MainController {
     @FXML private Label lblTrackingStatus;
     @FXML private Button btnToggleTracking;
 
-    // View Containers (in StackPane)
     @FXML private ScrollPane viewDashboard;
     @FXML private ScrollPane viewTimeline;
     @FXML private ScrollPane viewAnalytics;
 
-    // --- Dashboard Elements ---
     @FXML private Label lblGreeting;
     @FXML private Label lblCurrentDate;
     @FXML private ProgressBar pbDailyGoal;
@@ -58,7 +52,6 @@ public class MainController {
     @FXML private TableColumn<Activity, String> colDashDuration;
     @FXML private TableColumn<Activity, String> colDashCategory;
 
-    // --- Timeline Elements ---
     @FXML private Label lblSpotlightProcess;
     @FXML private Label lblSpotlightTitle;
     @FXML private Label lblSpotlightDuration;
@@ -70,7 +63,6 @@ public class MainController {
     @FXML private TableColumn<Activity, String> colTimeDuration;
     @FXML private TableColumn<Activity, String> colTimeCategory;
 
-    // --- Analytics Elements ---
     @FXML private Label lblAnalyticLogs;
     @FXML private Label lblAnalyticTotalTime;
     @FXML private Label lblAnalyticProductiveTime;
@@ -90,12 +82,10 @@ public class MainController {
         setupDateAndGreeting();
         setupTableColumns();
 
-        // Listen for tracker changes (window switch or pause) to update live UI immediately
         tracker.addChangeListener(() -> Platform.runLater(this::refreshAllViews));
 
         updateTrackingUi(tracker.isTrackingEnabled());
 
-        // Default to Dashboard view
         showDashboard();
         refreshAllViews();
     }
@@ -109,19 +99,16 @@ public class MainController {
     }
 
     private void setupTableColumns() {
-        // Top Apps Table
         colAppName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getKey()));
         colAppDuration.setCellValueFactory(data -> new SimpleStringProperty(formatSeconds(data.getValue().getValue())));
         tableTopApps.setItems(topAppsData);
 
-        // Dashboard Recent Table
         colDashApp.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getApplicationName()));
         colDashTitle.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getWindowTitle()));
         colDashDuration.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getFormattedDuration()));
         colDashCategory.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCategory().name()));
         tableDashboardRecent.setItems(dashboardRecentData);
 
-        // Timeline Stream Table
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
         colTimeApp.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getApplicationName()));
         colTimeTitle.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getWindowTitle()));
@@ -132,7 +119,6 @@ public class MainController {
         tableTimelineStream.setItems(timelineData);
     }
 
-    // --- Navigation Tabs ---
     @FXML
     public void handleNavDashboard(ActionEvent event) {
         showDashboard();
@@ -181,7 +167,6 @@ public class MainController {
         }
     }
 
-    // --- Pause & Resume Tracking ---
     @FXML
     public void handleToggleTracking(ActionEvent event) {
         if (tracker.isTrackingEnabled()) {
@@ -206,7 +191,6 @@ public class MainController {
         }
     }
 
-    // --- Data Calculation & Refresh ---
     public void refreshAllViews() {
         CompletableFuture.runAsync(() -> {
             LocalDate today = LocalDate.now();
@@ -215,7 +199,6 @@ public class MainController {
 
             List<Activity> todayList = new ArrayList<>(storage.findByDateRange(startToday, endToday));
 
-            // Include in-flight active window
             Activity live = tracker.getCurrentActivity();
             if (live != null && live.getStartedAt() != null && !live.getStartedAt().isBefore(startToday)) {
                 Activity liveCopy = new Activity(live.getApplicationName(), live.getWindowTitle(), live.getStartedAt(), live.getCategory());
@@ -238,14 +221,11 @@ public class MainController {
             double ratio = totalSec > 0 ? (prodSec * 100.0) / totalSec : 0.0;
             double goalProgress = Math.min(1.0, (double) prodSec / (120 * 60));
 
-            // Top Apps
             Map<String, Long> topApps = storage.getTopApplicationsDuration(startToday, endToday, 6);
             List<Map.Entry<String, Long>> topEntries = new ArrayList<>(topApps.entrySet());
 
-            // Recent Activities
             List<Activity> recentActs = storage.findRecent(15);
 
-            // Weekly Chart Series
             XYChart.Series<String, Number> weeklySeries = new XYChart.Series<>();
             for (int i = 6; i >= 0; i--) {
                 LocalDate d = today.minusDays(i);
@@ -257,7 +237,6 @@ public class MainController {
                 weeklySeries.getData().add(new XYChart.Data<>(d.format(DateTimeFormatter.ofPattern("EEE")), dSec / 60));
             }
 
-            // Analytics 30-Day Trend
             XYChart.Series<String, Number> analTrend = new XYChart.Series<>();
             for (int i = 6; i >= 0; i--) {
                 LocalDate d = today.minusDays(i);
@@ -276,7 +255,6 @@ public class MainController {
             final Activity fLive = live;
 
             Platform.runLater(() -> {
-                // Update Dashboard
                 lblTodayProductive.setText(formatSeconds(fProd));
                 lblTodayDistracting.setText(formatSeconds(fDist));
                 lblActiveAppsCount.setText(String.valueOf(topEntries.size()));
@@ -293,7 +271,6 @@ public class MainController {
                 dashboardRecentData.clear();
                 dashboardRecentData.addAll(recentActs);
 
-                // Update Timeline Spotlight
                 if (fLive != null) {
                     lblSpotlightProcess.setText(fLive.getApplicationName());
                     lblSpotlightTitle.setText(fLive.getWindowTitle());
@@ -304,7 +281,6 @@ public class MainController {
                 timelineData.clear();
                 timelineData.addAll(recentActs);
 
-                // Update Analytics
                 lblAnalyticLogs.setText(recentActs.size() + " logs");
                 lblAnalyticTotalTime.setText(formatSeconds(fTotal));
                 lblAnalyticProductiveTime.setText(formatSeconds(fProd));

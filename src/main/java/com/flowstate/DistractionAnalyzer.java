@@ -3,10 +3,6 @@ package com.flowstate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Transparent, rule-based distraction analyzer (no black-box machine learning).
- * Classifies applications as PRODUCTIVE, NEUTRAL, or DISTRACTING.
- */
 public class DistractionAnalyzer {
     private static final DistractionAnalyzer INSTANCE = new DistractionAnalyzer();
     private final Map<String, Activity.Category> customRules = new ConcurrentHashMap<>();
@@ -15,9 +11,6 @@ public class DistractionAnalyzer {
         return INSTANCE;
     }
 
-    /**
-     * Resolves the Category for an application process.
-     */
     public Activity.Category resolveCategory(String processName) {
         if (processName == null || processName.isBlank()) {
             return Activity.Category.NEUTRAL;
@@ -27,15 +20,11 @@ public class DistractionAnalyzer {
             return customRules.get(key);
         }
 
-        // Built-in intelligent defaults
         if (isProductive(key)) return Activity.Category.PRODUCTIVE;
         if (isDistracting(key)) return Activity.Category.DISTRACTING;
         return Activity.Category.NEUTRAL;
     }
 
-    /**
-     * Flags when a user transitions from productive work into a distraction.
-     */
     public boolean isDistraction(Activity.Category previous, Activity.Category current) {
         return previous == Activity.Category.PRODUCTIVE && current == Activity.Category.DISTRACTING;
     }

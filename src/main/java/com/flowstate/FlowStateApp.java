@@ -7,19 +7,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- * Main Application Entry Point and JavaFX Stage Controller.
- */
 public class FlowStateApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
         System.out.println("[FlowState] Starting Desktop Application...");
 
-        // Start background native Windows tracking
         ActivityTracker.getInstance().start();
 
-        // Register clean JVM shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("[FlowState] JVM exiting. Stopping background ActivityTracker...");
             ActivityTracker.getInstance().shutdown();

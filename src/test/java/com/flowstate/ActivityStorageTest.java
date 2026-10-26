@@ -30,14 +30,12 @@ class ActivityStorageTest {
         a2.setDurationSeconds(300);
         storage.save(a2);
 
-        // Verify reloaded from file using a fresh storage instance
         ActivityStorage reloadedStorage = new ActivityStorage(jsonFile);
         List<Activity> list = reloadedStorage.loadActivities();
         assertThat(list).hasSize(2);
         assertThat(list.get(0).getApplicationName()).isEqualTo("idea64.exe");
         assertThat(list.get(1).getApplicationName()).isEqualTo("discord.exe");
 
-        // Test top applications aggregation
         Map<String, Long> top = reloadedStorage.getTopApplicationsDuration(now.minusSeconds(3600), now.plusSeconds(3600), 5);
         assertThat(top).containsEntry("idea64.exe", 1200L);
         assertThat(top).containsEntry("discord.exe", 300L);

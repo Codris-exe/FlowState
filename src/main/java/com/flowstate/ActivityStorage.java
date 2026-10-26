@@ -16,10 +16,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
-/**
- * Manages local file persistence for application activities using Java I/O Streams
- * (FileInputStream, FileOutputStream, BufferedInputStream, BufferedOutputStream).
- */
 public class ActivityStorage {
     private static final ActivityStorage INSTANCE = new ActivityStorage();
 
@@ -63,9 +59,6 @@ public class ActivityStorage {
         }
     }
 
-    /**
-     * Reads all activities from file using FileInputStream and BufferedInputStream.
-     */
     public List<Activity> loadActivities() {
         lock.readLock().lock();
         try {
@@ -85,9 +78,6 @@ public class ActivityStorage {
         }
     }
 
-    /**
-     * Writes all activities to file using FileOutputStream and BufferedOutputStream.
-     */
     private void saveAll(List<Activity> activities) {
         lock.writeLock().lock();
         try {
@@ -103,9 +93,6 @@ public class ActivityStorage {
         }
     }
 
-    /**
-     * Persists a new activity record to disk.
-     */
     public Activity save(Activity activity) {
         if (activity == null) return null;
         lock.writeLock().lock();
@@ -122,9 +109,6 @@ public class ActivityStorage {
         }
     }
 
-    /**
-     * Finds activities within a given date range.
-     */
     public List<Activity> findByDateRange(Instant start, Instant end) {
         return loadActivities().stream()
                 .filter(a -> a.getStartedAt() != null)
@@ -132,9 +116,6 @@ public class ActivityStorage {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Retrieves the most recent activities.
-     */
     public List<Activity> findRecent(int limit) {
         List<Activity> all = loadActivities();
         int from = Math.max(0, all.size() - limit);
@@ -143,9 +124,6 @@ public class ActivityStorage {
         return sub;
     }
 
-    /**
-     * Aggregates top applications by total duration.
-     */
     public Map<String, Long> getTopApplicationsDuration(Instant start, Instant end, int limit) {
         return findByDateRange(start, end).stream()
                 .collect(Collectors.groupingBy(Activity::getApplicationName, Collectors.summingLong(Activity::getDurationSeconds)))
@@ -155,9 +133,6 @@ public class ActivityStorage {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
-    /**
-     * Clears all recorded activities.
-     */
     public void clearAll() {
         lock.writeLock().lock();
         try {

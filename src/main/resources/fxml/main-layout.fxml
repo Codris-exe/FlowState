@@ -24,15 +24,13 @@
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.flowstate.MainController">
 
-    <!-- Persistent Left Sidebar -->
-    <left>
+        <left>
         <VBox prefWidth="240.0" spacing="8.0" styleClass="sidebar">
             <padding>
                 <Insets bottom="20.0" left="16.0" right="16.0" top="24.0"/>
             </padding>
 
-            <!-- Brand Header -->
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
                 <Label style="-fx-font-size: 20px;" text="🌊"/>
                 <Label styleClass="brand-title" text="FlowState"/>
             </HBox>
@@ -40,8 +38,7 @@
             <Region prefHeight="16.0"/>
             <Label styleClass="sidebar-section-header" text="NAVIGATION"/>
 
-            <!-- 3 Core Navigation Items -->
-            <VBox spacing="6.0" VBox.vgrow="ALWAYS">
+                        <VBox spacing="6.0" VBox.vgrow="ALWAYS">
                 <Button fx:id="btnNavDashboard" maxWidth="Infinity" onAction="#handleNavDashboard"
                         styleClass="nav-button, active" text="📊  Dashboard"/>
 
@@ -52,8 +49,7 @@
                         styleClass="nav-button" text="📈  Analytics"/>
             </VBox>
 
-            <!-- Bottom Background Tracking Status -->
-            <VBox spacing="8.0" styleClass="card" style="-fx-padding: 12px; -fx-background-color: #101117;">
+                        <VBox spacing="8.0" styleClass="card" style="-fx-padding: 12px; -fx-background-color: #101117;">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Circle fx:id="trackingStatusDot" fill="#10B981" radius="4.0"/>
                     <Label fx:id="lblTrackingStatus" style="-fx-font-size: 12px; -fx-text-fill: #9CA3AF; -fx-font-weight: 600;"
@@ -66,19 +62,16 @@
         </VBox>
     </left>
 
-    <!-- Main Content Area: StackPane switching views directly -->
-    <center>
+        <center>
         <StackPane styleClass="content-area">
 
-            <!-- 1. DASHBOARD VIEW -->
-            <ScrollPane fx:id="viewDashboard" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+                        <ScrollPane fx:id="viewDashboard" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
                 <VBox spacing="20.0">
                     <padding>
                         <Insets bottom="24.0" right="12.0"/>
                     </padding>
 
-                    <!-- Top Greeting Header -->
-                    <HBox alignment="CENTER_LEFT" spacing="16.0">
+                                        <HBox alignment="CENTER_LEFT" spacing="16.0">
                         <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                             <Label fx:id="lblGreeting" styleClass="view-title" text="Good day!"/>
                             <Label fx:id="lblCurrentDate" styleClass="view-subtitle" text="Today is Monday, October 26, 2026"/>
@@ -86,8 +79,7 @@
                         <Label styleClass="date-pill" text="⚡ Real-Time Tracking Active"/>
                     </HBox>
 
-                    <!-- Daily Goal Card -->
-                    <VBox spacing="8.0" styleClass="card">
+                                        <VBox spacing="8.0" styleClass="card">
                         <HBox alignment="CENTER_LEFT">
                             <Label styleClass="card-title" text="Daily Productive Focus Goal"/>
                             <Region HBox.hgrow="ALWAYS"/>
@@ -96,8 +88,7 @@
                         <ProgressBar fx:id="pbDailyGoal" maxWidth="Infinity" progress="0.0"/>
                     </VBox>
 
-                    <!-- 4 Metric Cards -->
-                    <GridPane hgap="16.0" vgap="16.0">
+                                        <GridPane hgap="16.0" vgap="16.0">
                         <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS">
                             <HBox alignment="CENTER_LEFT">
                                 <Label styleClass="card-title" text="Productive Time"/>
@@ -139,8 +130,7 @@
                         </VBox>
                     </GridPane>
 
-                    <!-- Weekly Chart & Top Apps Split -->
-                    <HBox spacing="16.0">
+                                        <HBox spacing="16.0">
                         <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="540.0">
                             <Label styleClass="card-title" text="WEEKLY PRODUCTIVE VOLUME (MINUTES)"/>
                             <BarChart fx:id="chartWeeklyFocus" animated="false" legendVisible="false" prefHeight="220.0">
@@ -167,8 +157,7 @@
                         </VBox>
                     </HBox>
 
-                    <!-- Recent Activities Table -->
-                    <VBox spacing="10.0" styleClass="card">
+                                        <VBox spacing="10.0" styleClass="card">
                         <Label styleClass="card-title" text="RECENT APPLICATION ACTIVITIES"/>
                         <TableView fx:id="tableDashboardRecent" prefHeight="180.0">
                             <columns>
@@ -185,15 +174,13 @@
                 </VBox>
             </ScrollPane>
 
-            <!-- 2. ACTIVITY TIMELINE VIEW (RIZE Style) -->
-            <ScrollPane fx:id="viewTimeline" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" visible="false">
+                        <ScrollPane fx:id="viewTimeline" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" visible="false">
                 <VBox spacing="20.0">
                     <padding>
                         <Insets bottom="24.0" right="12.0"/>
                     </padding>
 
-                    <!-- Header -->
-                    <HBox alignment="CENTER_LEFT" spacing="16.0">
+                                        <HBox alignment="CENTER_LEFT" spacing="16.0">
                         <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                             <HBox alignment="CENTER_LEFT" spacing="10.0">
                                 <Label styleClass="view-title" text="Activity Timeline"/>
@@ -203,8 +190,7 @@
                         </VBox>
                     </HBox>
 
-                    <!-- Active Spotlight Card -->
-                    <VBox spacing="14.0" styleClass="card" style="-fx-border-color: #8B5CF6; -fx-border-width: 1px 1px 1px 4px;">
+                                        <VBox spacing="14.0" styleClass="card" style="-fx-border-color: #8B5CF6; -fx-border-width: 1px 1px 1px 4px;">
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                             <Circle fill="#10B981" radius="4.0"/>
                             <Label styleClass="card-title" text="ACTIVE FOREGROUND APPLICATION"/>
@@ -224,8 +210,7 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Timeline Stream Table -->
-                    <VBox spacing="10.0" styleClass="card">
+                                        <VBox spacing="10.0" styleClass="card">
                         <Label styleClass="card-title" text="LOGGED ACTIVITY STREAM"/>
                         <TableView fx:id="tableTimelineStream" prefHeight="420.0">
                             <columns>
@@ -243,21 +228,18 @@
                 </VBox>
             </ScrollPane>
 
-            <!-- 3. ANALYTICS VIEW (Deep Focus Style) -->
-            <ScrollPane fx:id="viewAnalytics" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" visible="false">
+                        <ScrollPane fx:id="viewAnalytics" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" visible="false">
                 <VBox spacing="20.0">
                     <padding>
                         <Insets bottom="24.0" right="12.0"/>
                     </padding>
 
-                    <!-- Header -->
-                    <VBox spacing="4.0">
+                                        <VBox spacing="4.0">
                         <Label styleClass="view-title" text="Analytics"/>
                         <Label styleClass="view-subtitle" text="Visualize your application usage and productivity trends"/>
                     </VBox>
 
-                    <!-- 4 Stat Cards -->
-                    <GridPane hgap="16.0" vgap="16.0">
+                                        <GridPane hgap="16.0" vgap="16.0">
                         <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS">
                             <HBox alignment="CENTER_LEFT">
                                 <Label styleClass="card-title" text="Activity Logs"/>
@@ -299,8 +281,7 @@
                         </VBox>
                     </GridPane>
 
-                    <!-- Chart Row -->
-                    <HBox spacing="16.0">
+                                        <HBox spacing="16.0">
                         <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="540.0">
                             <Label styleClass="card-title" text="DAILY TRACKED TIME (MINUTES)"/>
                             <BarChart fx:id="chartAnalyticsTrend" animated="false" legendVisible="false" prefHeight="260.0">
@@ -325,3 +306,4 @@
     </center>
 
 </BorderPane>
+
