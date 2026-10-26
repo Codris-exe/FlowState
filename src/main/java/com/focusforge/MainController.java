@@ -1,4 +1,4 @@
-package com.flowstate;
+package com.focusforge;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -304,3 +304,4 @@ public class MainController {
         return String.format("%dm", minutes);
     }
 }
+

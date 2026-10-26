@@ -1,4 +1,4 @@
-package com.flowstate;
+package com.focusforge;
 
 import java.io.Serial;
 import java.io.Serializable;

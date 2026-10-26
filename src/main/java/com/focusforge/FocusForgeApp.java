@@ -1,4 +1,4 @@
-package com.flowstate;
+package com.focusforge;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -7,7 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class FlowStateApp extends Application {
+public class FocusForgeApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
@@ -25,7 +25,7 @@ public class FlowStateApp extends Application {
             Parent root = loader.load();
 
             Scene scene = new Scene(root, 1180, 760);
-            scene.getStylesheets().add(getClass().getResource("/css/flowstate-theme.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/focusforge-theme.css").toExternalForm());
 
             primaryStage.setTitle("Focus Forge — Smart Distraction & Productivity Analyzer");
             primaryStage.setMinWidth(980);

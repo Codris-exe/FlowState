@@ -1,4 +1,4 @@
-package com.flowstate;
+package com.focusforge;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -68,8 +68,7 @@ public class ActivityStorage {
             }
             try (InputStream fis = new FileInputStream(file);
                  InputStream bis = new BufferedInputStream(fis)) {
-                return mapper.readValue(bis, new TypeReference<>() {
-                });
+                return mapper.readValue(bis, new TypeReference<>() {});
             }
         } catch (Exception e) {
             System.err.println("[ActivityStorage] Failed to read activities: " + e.getMessage());

@@ -1,4 +1,4 @@
-package com.flowstate;
+package com.focusforge;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,3 +33,4 @@ class DistractionAnalyzerTest {
         assertThat(analyzer.resolveCategory("explorer.exe")).isEqualTo(Activity.Category.NEUTRAL);
     }
 }
+

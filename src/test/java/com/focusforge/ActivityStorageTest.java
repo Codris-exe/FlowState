@@ -1,4 +1,4 @@
-package com.flowstate;
+package com.focusforge;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,3 +41,4 @@ class ActivityStorageTest {
         assertThat(top).containsEntry("discord.exe", 300L);
     }
 }
+

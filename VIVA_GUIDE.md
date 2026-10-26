@@ -46,16 +46,16 @@ This guide is structured to help you explain **every single concept, architectur
 
 ## 📂 2. Tour of the Codebase (All 6 Files)
 
-The entire application was consolidated into **exactly 6 core files** in a single package (`com.Focus Forge`):
+The entire application was consolidated into **exactly 6 core files** in a single package (`com.focusforge`):
 
 | File | Primary Responsibility | Key Java Concepts Demonstrated |
 |---|---|---|
-| [`Focus ForgeApp.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/Focus ForgeApp.java) | Application entry point & stage setup | JavaFX Lifecycle (`Application`), JVM Shutdown Hooks |
-| [`Activity.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/Activity.java) | Domain Model / Entity | OOP Encapsulation, Enums, `java.time` API, Serialization |
-| [`DistractionAnalyzer.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/DistractionAnalyzer.java) | Business Logic / Heuristics | Classification Algorithms, String Pattern Matching, State Machines |
-| [`ActivityStorage.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/ActivityStorage.java) | File Persistence Engine | `FileInputStream`, `FileOutputStream`, `ReentrantReadWriteLock`, Jackson |
-| [`ActivityTracker.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/ActivityTracker.java) | Native Windows Tracker | JNA (Win32 `User32`/`Kernel32`), `ScheduledExecutorService`, Atomic variables |
-| [`MainController.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/MainController.java) | Presentation & UI Controller | MVC Pattern, `CompletableFuture` (Async), `Platform.runLater()`, Charts |
+| [`FocusForgeApp.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/FocusForgeApp.java) | Application entry point & stage setup | JavaFX Lifecycle (`Application`), JVM Shutdown Hooks |
+| [`Activity.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/Activity.java) | Domain Model / Entity | OOP Encapsulation, Enums, `java.time` API, Serialization |
+| [`DistractionAnalyzer.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/DistractionAnalyzer.java) | Business Logic / Heuristics | Classification Algorithms, String Pattern Matching, State Machines |
+| [`ActivityStorage.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/ActivityStorage.java) | File Persistence Engine | `FileInputStream`, `FileOutputStream`, `ReentrantReadWriteLock`, Jackson |
+| [`ActivityTracker.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/ActivityTracker.java) | Native Windows Tracker | JNA (Win32 `User32`/`Kernel32`), `ScheduledExecutorService`, Atomic variables |
+| [`MainController.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/MainController.java) | Presentation & UI Controller | MVC Pattern, `CompletableFuture` (Async), `Platform.runLater()`, Charts |
 
 ---
 
@@ -63,7 +63,7 @@ The entire application was consolidated into **exactly 6 core files** in a singl
 
 ---
 
-### File 1: [`Focus ForgeApp.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/Focus ForgeApp.java)
+### File 1: [`FocusForgeApp.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/FocusForgeApp.java)
 **Purpose:** The bootstrap entry point for the desktop GUI.
 
 - **`extends Application`**: Makes this class a JavaFX application. JavaFX manages the UI life-cycle through `launch(args)` -> `init()` -> `start(Stage)` -> `stop()`.
@@ -76,11 +76,11 @@ The entire application was consolidated into **exactly 6 core files** in a singl
   }));
   ```
   *What to tell your teacher:* *"This is a **JVM Shutdown Hook**. Even if the user closes the app abruptly or stops it from the task manager, the JVM executes this thread before terminating, ensuring background threads are closed gracefully and the last active interval is saved to disk."*
-- **Scene Initialization**: Loads the declarative layout from XML (`main-layout.fxml`), sets an initial resolution of `1180x760`, and links the custom CSS stylesheet (`Focus Forge-theme.css`).
+- **Scene Initialization**: Loads the declarative layout from XML (`main-layout.fxml`), sets an initial resolution of `1180x760`, and links the custom CSS stylesheet (`focusforge-theme.css`).
 
 ---
 
-### File 2: [`Activity.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/Activity.java)
+### File 2: [`Activity.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/Activity.java)
 **Purpose:** The core Data Model representing a single uninterrupted session in an application window.
 
 #### Key Components:
@@ -93,7 +93,7 @@ The entire application was consolidated into **exactly 6 core files** in a singl
 
 ---
 
-### File 3: [`DistractionAnalyzer.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/DistractionAnalyzer.java)
+### File 3: [`DistractionAnalyzer.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/DistractionAnalyzer.java)
 **Purpose:** The decision engine that evaluates whether an application process represents productive work or a distraction.
 
 #### Key Logic:
@@ -105,7 +105,7 @@ The entire application was consolidated into **exactly 6 core files** in a singl
 
 ---
 
-### File 4: [`ActivityStorage.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/ActivityStorage.java)
+### File 4: [`ActivityStorage.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/ActivityStorage.java)
 **Purpose:** The persistence engine. Durably writes and reads activity records to `./data/activities.json` using low-level Java File Streams.
 
 #### 1. Low-Level File Input Streams:
@@ -136,7 +136,7 @@ private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
 ---
 
-### File 5: [`ActivityTracker.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/ActivityTracker.java)
+### File 5: [`ActivityTracker.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/ActivityTracker.java)
 **Purpose:** Interacts with the native Windows operating system to sample the active window.
 
 #### 1. JNA (Java Native Access) Win32 Calls:
@@ -155,7 +155,7 @@ private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
 ---
 
-### File 6: [`MainController.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/MainController.java)
+### File 6: [`MainController.java`](file:///c:/Projects/FlowState/src/main/java/com.focusforge/MainController.java)
 **Purpose:** Controller layer coordinating UI views, background data computation, and user interactions.
 
 #### 1. Thread Separation (Crucial for Viva!):
@@ -235,4 +235,5 @@ CompletableFuture.runAsync(() -> {
 > *The user interface is built in **JavaFX** with a high-performance **Model-View-Controller** architecture, decoupling background calculations via `CompletableFuture` and updating the UI smoothly via `Platform.runLater()`. Focus Forge is completely privacy-first, capturing zero keystrokes and zero screenshots.*
 >
 > *I am ready to demonstrate the live application and answer your questions."*
+
 
