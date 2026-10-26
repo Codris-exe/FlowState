@@ -4,15 +4,12 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -120,17 +117,17 @@ public class MainController {
     }
 
     @FXML
-    public void handleNavDashboard(ActionEvent event) {
+    public void handleNavDashboard() {
         showDashboard();
     }
 
     @FXML
-    public void handleNavTimeline(ActionEvent event) {
+    public void handleNavTimeline() {
         showTimeline();
     }
 
     @FXML
-    public void handleNavAnalytics(ActionEvent event) {
+    public void handleNavAnalytics() {
         showAnalytics();
     }
 
@@ -168,7 +165,7 @@ public class MainController {
     }
 
     @FXML
-    public void handleToggleTracking(ActionEvent event) {
+    public void handleToggleTracking() {
         if (tracker.isTrackingEnabled()) {
             tracker.pauseTracking();
             updateTrackingUi(false);
@@ -290,9 +287,9 @@ public class MainController {
                 chartAnalyticsTrend.getData().add(analTrend);
 
                 chartAnalyticsPie.getData().clear();
-                if (fProd > 0) chartAnalyticsPie.getData().add(new PieChart.Data("Productive", fProd / 60));
-                if (fNeut > 0) chartAnalyticsPie.getData().add(new PieChart.Data("Neutral", fNeut / 60));
-                if (fDist > 0) chartAnalyticsPie.getData().add(new PieChart.Data("Distracting", fDist / 60));
+                if (fProd > 0) chartAnalyticsPie.getData().add(new PieChart.Data("Productive", (double) fProd / 60));
+                if (fNeut > 0) chartAnalyticsPie.getData().add(new PieChart.Data("Neutral", (double) fNeut / 60));
+                if (fDist > 0) chartAnalyticsPie.getData().add(new PieChart.Data("Distracting", (double) fDist / 60));
                 if (chartAnalyticsPie.getData().isEmpty()) {
                     chartAnalyticsPie.getData().add(new PieChart.Data("No Activity Logged", 1));
                 }

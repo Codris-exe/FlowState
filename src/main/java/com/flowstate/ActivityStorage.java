@@ -68,7 +68,8 @@ public class ActivityStorage {
             }
             try (InputStream fis = new FileInputStream(file);
                  InputStream bis = new BufferedInputStream(fis)) {
-                return mapper.readValue(bis, new TypeReference<List<Activity>>() {});
+                return mapper.readValue(bis, new TypeReference<>() {
+                });
             }
         } catch (Exception e) {
             System.err.println("[ActivityStorage] Failed to read activities: " + e.getMessage());
@@ -131,15 +132,5 @@ public class ActivityStorage {
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(limit)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-    }
-
-    public void clearAll() {
-        lock.writeLock().lock();
-        try {
-            saveAll(new ArrayList<>());
-            idSequence.set(1);
-        } finally {
-            lock.writeLock().unlock();
-        }
     }
 }

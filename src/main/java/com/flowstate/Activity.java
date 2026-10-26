@@ -1,11 +1,13 @@
 package com.flowstate;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 
 public class Activity implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public enum Category {
@@ -61,15 +63,11 @@ public class Activity implements Serializable {
     public void setId(Long id) { this.id = id; }
 
     public String getApplicationName() { return applicationName; }
-    public void setApplicationName(String applicationName) { this.applicationName = applicationName; }
 
     public String getWindowTitle() { return windowTitle; }
-    public void setWindowTitle(String windowTitle) { this.windowTitle = windowTitle; }
 
     public Instant getStartedAt() { return startedAt; }
-    public void setStartedAt(Instant startedAt) { this.startedAt = startedAt; }
 
-    public Instant getEndedAt() { return endedAt; }
     public void setEndedAt(Instant endedAt) { this.endedAt = endedAt; }
 
     public long getDurationSeconds() { return durationSeconds; }

@@ -29,12 +29,6 @@ public class DistractionAnalyzer {
         return previous == Activity.Category.PRODUCTIVE && current == Activity.Category.DISTRACTING;
     }
 
-    public void setCustomRule(String processName, Activity.Category category) {
-        if (processName != null && category != null) {
-            customRules.put(processName.trim().toLowerCase(), category);
-        }
-    }
-
     private boolean isProductive(String name) {
         return name.contains("idea") || name.contains("code") || name.contains("eclipse")
                 || name.contains("studio") || name.contains("terminal") || name.contains("powershell")
