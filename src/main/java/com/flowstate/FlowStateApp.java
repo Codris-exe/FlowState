@@ -138,14 +138,7 @@ public class FlowStateApp extends Application {
     }
 
     private void shutdownServices() {
-        try {
-            ActivityTrackingService.getInstance().shutdown();
-            FocusSessionService.getInstance().shutdown();
-            DatabaseManager.getInstance().close();
-            logger.info("FlowState cleanly shut down all services.");
-        } catch (Exception e) {
-            logger.error("Error during application shutdown: {}", e.getMessage());
-        }
+        com.flowstate.service.LifecycleManager.getInstance().shutdownAll();
     }
 
     public static void main(String[] args) {
