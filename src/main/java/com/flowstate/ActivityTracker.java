@@ -32,7 +32,7 @@ public class ActivityTracker {
     public ActivityTracker() {
         this(ActivityStorage.getInstance(), DistractionAnalyzer.getInstance(),
                 Executors.newSingleThreadScheduledExecutor(r -> {
-                    Thread t = new Thread(r, "FlowState-Tracker");
+                    Thread t = new Thread(r, "FocusForge-Tracker");
                     t.setDaemon(true);
                     return t;
                 }));

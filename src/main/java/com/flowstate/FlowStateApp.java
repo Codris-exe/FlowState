@@ -11,12 +11,12 @@ public class FlowStateApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        System.out.println("[FlowState] Starting Desktop Application...");
+        System.out.println("[Focus Forge] Starting Desktop Application...");
 
         ActivityTracker.getInstance().start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("[FlowState] JVM exiting. Stopping background ActivityTracker...");
+            System.out.println("[Focus Forge] JVM exiting. Stopping background ActivityTracker...");
             ActivityTracker.getInstance().shutdown();
         }));
 
@@ -27,7 +27,7 @@ public class FlowStateApp extends Application {
             Scene scene = new Scene(root, 1180, 760);
             scene.getStylesheets().add(getClass().getResource("/css/flowstate-theme.css").toExternalForm());
 
-            primaryStage.setTitle("FlowState — Smart Distraction & Productivity Analyzer");
+            primaryStage.setTitle("Focus Forge — Smart Distraction & Productivity Analyzer");
             primaryStage.setMinWidth(980);
             primaryStage.setMinHeight(680);
             primaryStage.setScene(scene);
@@ -38,9 +38,9 @@ public class FlowStateApp extends Application {
             });
 
             primaryStage.show();
-            System.out.println("[FlowState] GUI successfully launched.");
+            System.out.println("[Focus Forge] GUI successfully launched.");
         } catch (Exception e) {
-            System.err.println("[FlowState] Failed to load user interface: " + e.getMessage());
+            System.err.println("[Focus Forge] Failed to load user interface: " + e.getMessage());
         }
     }
 

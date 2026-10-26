@@ -1,13 +1,13 @@
-# 🎓 FlowState — Complete Viva & Teacher Defense Guide
+# 🎓 Focus Forge — Complete Viva & Teacher Defense Guide
 
-This guide is structured to help you explain **every single concept, architectural decision, and line of code** in **FlowState** to your professors and external examiners.
+This guide is structured to help you explain **every single concept, architectural decision, and line of code** in **Focus Forge** to your professors and external examiners.
 
 ---
 
 ## 🧭 1. Executive Summary & Architecture
 
-### What is FlowState?
-> **FlowState** is an autonomous desktop productivity and distraction analyzer built in **Java 21** and **JavaFX**. It automatically detects what application is active in the foreground using native Windows APIs (via JNA), categorizes computer usage into **Productive**, **Neutral**, or **Distracting**, persists data safely using **Java File Streams (`FileInputStream` / `FileOutputStream`)**, and renders real-time analytics in an obsidian dark-mode interface.
+### What is Focus Forge?
+> **Focus Forge** is an autonomous desktop productivity and distraction analyzer built in **Java 21** and **JavaFX**. It automatically detects what application is active in the foreground using native Windows APIs (via JNA), categorizes computer usage into **Productive**, **Neutral**, or **Distracting**, persists data safely using **Java File Streams (`FileInputStream` / `FileOutputStream`)**, and renders real-time analytics in an obsidian dark-mode interface.
 
 ### High-Level Architecture Diagram
 
@@ -46,16 +46,16 @@ This guide is structured to help you explain **every single concept, architectur
 
 ## 📂 2. Tour of the Codebase (All 6 Files)
 
-The entire application was consolidated into **exactly 6 core files** in a single package (`com.flowstate`):
+The entire application was consolidated into **exactly 6 core files** in a single package (`com.Focus Forge`):
 
 | File | Primary Responsibility | Key Java Concepts Demonstrated |
 |---|---|---|
-| [`FlowStateApp.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/FlowStateApp.java) | Application entry point & stage setup | JavaFX Lifecycle (`Application`), JVM Shutdown Hooks |
-| [`Activity.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/Activity.java) | Domain Model / Entity | OOP Encapsulation, Enums, `java.time` API, Serialization |
-| [`DistractionAnalyzer.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/DistractionAnalyzer.java) | Business Logic / Heuristics | Classification Algorithms, String Pattern Matching, State Machines |
-| [`ActivityStorage.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/ActivityStorage.java) | File Persistence Engine | `FileInputStream`, `FileOutputStream`, `ReentrantReadWriteLock`, Jackson |
-| [`ActivityTracker.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/ActivityTracker.java) | Native Windows Tracker | JNA (Win32 `User32`/`Kernel32`), `ScheduledExecutorService`, Atomic variables |
-| [`MainController.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/MainController.java) | Presentation & UI Controller | MVC Pattern, `CompletableFuture` (Async), `Platform.runLater()`, Charts |
+| [`Focus ForgeApp.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/Focus ForgeApp.java) | Application entry point & stage setup | JavaFX Lifecycle (`Application`), JVM Shutdown Hooks |
+| [`Activity.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/Activity.java) | Domain Model / Entity | OOP Encapsulation, Enums, `java.time` API, Serialization |
+| [`DistractionAnalyzer.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/DistractionAnalyzer.java) | Business Logic / Heuristics | Classification Algorithms, String Pattern Matching, State Machines |
+| [`ActivityStorage.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/ActivityStorage.java) | File Persistence Engine | `FileInputStream`, `FileOutputStream`, `ReentrantReadWriteLock`, Jackson |
+| [`ActivityTracker.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/ActivityTracker.java) | Native Windows Tracker | JNA (Win32 `User32`/`Kernel32`), `ScheduledExecutorService`, Atomic variables |
+| [`MainController.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/MainController.java) | Presentation & UI Controller | MVC Pattern, `CompletableFuture` (Async), `Platform.runLater()`, Charts |
 
 ---
 
@@ -63,7 +63,7 @@ The entire application was consolidated into **exactly 6 core files** in a singl
 
 ---
 
-### File 1: [`FlowStateApp.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/FlowStateApp.java)
+### File 1: [`Focus ForgeApp.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/Focus ForgeApp.java)
 **Purpose:** The bootstrap entry point for the desktop GUI.
 
 - **`extends Application`**: Makes this class a JavaFX application. JavaFX manages the UI life-cycle through `launch(args)` -> `init()` -> `start(Stage)` -> `stop()`.
@@ -71,16 +71,16 @@ The entire application was consolidated into **exactly 6 core files** in a singl
 - **JVM Shutdown Hook**:
   ```java
   Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      System.out.println("[FlowState] JVM exiting. Stopping background ActivityTracker...");
+      System.out.println("[Focus Forge] JVM exiting. Stopping background ActivityTracker...");
       ActivityTracker.getInstance().shutdown();
   }));
   ```
   *What to tell your teacher:* *"This is a **JVM Shutdown Hook**. Even if the user closes the app abruptly or stops it from the task manager, the JVM executes this thread before terminating, ensuring background threads are closed gracefully and the last active interval is saved to disk."*
-- **Scene Initialization**: Loads the declarative layout from XML (`main-layout.fxml`), sets an initial resolution of `1180x760`, and links the custom CSS stylesheet (`flowstate-theme.css`).
+- **Scene Initialization**: Loads the declarative layout from XML (`main-layout.fxml`), sets an initial resolution of `1180x760`, and links the custom CSS stylesheet (`Focus Forge-theme.css`).
 
 ---
 
-### File 2: [`Activity.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/Activity.java)
+### File 2: [`Activity.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/Activity.java)
 **Purpose:** The core Data Model representing a single uninterrupted session in an application window.
 
 #### Key Components:
@@ -93,7 +93,7 @@ The entire application was consolidated into **exactly 6 core files** in a singl
 
 ---
 
-### File 3: [`DistractionAnalyzer.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/DistractionAnalyzer.java)
+### File 3: [`DistractionAnalyzer.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/DistractionAnalyzer.java)
 **Purpose:** The decision engine that evaluates whether an application process represents productive work or a distraction.
 
 #### Key Logic:
@@ -105,7 +105,7 @@ The entire application was consolidated into **exactly 6 core files** in a singl
 
 ---
 
-### File 4: [`ActivityStorage.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/ActivityStorage.java)
+### File 4: [`ActivityStorage.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/ActivityStorage.java)
 **Purpose:** The persistence engine. Durably writes and reads activity records to `./data/activities.json` using low-level Java File Streams.
 
 #### 1. Low-Level File Input Streams:
@@ -136,7 +136,7 @@ private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
 ---
 
-### File 5: [`ActivityTracker.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/ActivityTracker.java)
+### File 5: [`ActivityTracker.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/ActivityTracker.java)
 **Purpose:** Interacts with the native Windows operating system to sample the active window.
 
 #### 1. JNA (Java Native Access) Win32 Calls:
@@ -155,7 +155,7 @@ private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
 ---
 
-### File 6: [`MainController.java`](file:///c:/Projects/FlowState/src/main/java/com/flowstate/MainController.java)
+### File 6: [`MainController.java`](file:///c:/Projects/Focus Forge/src/main/java/com/Focus Forge/MainController.java)
 **Purpose:** Controller layer coordinating UI views, background data computation, and user interactions.
 
 #### 1. Thread Separation (Crucial for Viva!):
@@ -188,8 +188,8 @@ CompletableFuture.runAsync(() -> {
 ### Q3: What is the CPU overhead of sampling every 1.5 seconds?
 > **Answer:** *"The CPU overhead is less than 0.2%. Because JNA executes in-memory native calls directly to the Win32 subsystem, a single check takes less than 0.5 milliseconds. We do not spawn external shell processes (like `tasklist` or `powershell.exe`), which would cause CPU spikes."*
 
-### Q4: Does FlowState invade user privacy like a keylogger?
-> **Answer:** *"No. FlowState is strictly non-invasive:
+### Q4: Does Focus Forge invade user privacy like a keylogger?
+> **Answer:** *"No. Focus Forge is strictly non-invasive:
 > 1. Zero keystrokes are recorded (no keyboard hooks or `WH_KEYBOARD_LL`).
 > 2. Zero screen pixels or screenshots are taken.
 > 3. Zero clipboard contents are accessed.
@@ -226,12 +226,13 @@ CompletableFuture.runAsync(() -> {
 
 > *"Respected teachers and examiners,*
 >
-> *Today I present **FlowState**, an autonomous desktop productivity and distraction analyzer designed to measure computer usage and detect digital distractions in real time.*
+> *Today I present **Focus Forge**, an autonomous desktop productivity and distraction analyzer designed to measure computer usage and detect digital distractions in real time.*
 >
-> *Traditional productivity apps rely on manual Pomodoro timers where users have to remember to click start and stop. FlowState solves this through **passive ambient tracking**. Built in **Java 21**, it utilizes **JNA** to communicate directly with the Windows Win32 API, sampling the active window every 1.5 seconds on a background daemon thread with less than 0.2% CPU overhead.*
+> *Traditional productivity apps rely on manual Pomodoro timers where users have to remember to click start and stop. Focus Forge solves this through **passive ambient tracking**. Built in **Java 21**, it utilizes **JNA** to communicate directly with the Windows Win32 API, sampling the active window every 1.5 seconds on a background daemon thread with less than 0.2% CPU overhead.*
 >
 > *The application classifies tools as **Productive**, **Neutral**, or **Distracting** using transparent, explainable heuristics. All logs are durably saved using **low-level Java File Streams (`FileInputStream` / `FileOutputStream`)** with thread-safe `ReentrantReadWriteLock` concurrency, eliminating the need for complex external database setups.*
 >
-> *The user interface is built in **JavaFX** with a high-performance **Model-View-Controller** architecture, decoupling background calculations via `CompletableFuture` and updating the UI smoothly via `Platform.runLater()`. FlowState is completely privacy-first, capturing zero keystrokes and zero screenshots.*
+> *The user interface is built in **JavaFX** with a high-performance **Model-View-Controller** architecture, decoupling background calculations via `CompletableFuture` and updating the UI smoothly via `Platform.runLater()`. Focus Forge is completely privacy-first, capturing zero keystrokes and zero screenshots.*
 >
 > *I am ready to demonstrate the live application and answer your questions."*
+

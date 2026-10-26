@@ -89,8 +89,7 @@ public class MainController {
 
     private void setupDateAndGreeting() {
         LocalTime now = LocalTime.now();
-        String greeting = (now.isBefore(LocalTime.NOON)) ? "Good morning!"
-                : (now.isBefore(LocalTime.of(17, 0))) ? "Good afternoon!" : "Good evening!";
+        String greeting = (now.isBefore(LocalTime.NOON)) ? "Good morning!" : (now.isBefore(LocalTime.of(17, 0))) ? "Good afternoon!" : "Good evening!";
         lblGreeting.setText(greeting);
         lblCurrentDate.setText("Today is " + LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")));
     }

@@ -1,21 +1,21 @@
-# FlowState — Smart Distraction & Productivity Analyzer
+# Focus Forge — Smart Distraction & Productivity Analyzer
 
 A native Java 21 desktop application designed to help developers, students, and knowledge workers understand their computer usage, track deep-work focus sessions, eliminate digital distractions, and analyze productivity trends.
 
-Developed as a college-level **B.Tech Computer Science & Engineering (CSE)** capstone project, FlowState demonstrates advanced Java Object-Oriented Programming (OOP), multithreading, concurrency synchronization, high-performance Java I/O Streams (`FileInputStream`, `FileOutputStream`, `BufferedInputStream`, `BufferedOutputStream`), native Windows integration via JNA, modern JavaFX UI/UX design, and optional PostgreSQL JDBC persistence.
+Developed as a college-level **B.Tech Computer Science & Engineering (CSE)** capstone project, Focus Forge demonstrates advanced Java Object-Oriented Programming (OOP), multithreading, concurrency synchronization, high-performance Java I/O Streams (`FileInputStream`, `FileOutputStream`, `BufferedInputStream`, `BufferedOutputStream`), native Windows integration via JNA, modern JavaFX UI/UX design, and optional PostgreSQL JDBC persistence.
 
 ---
 
 ## 💾 Storage Architecture: Zero-Setup File Storage
 
-FlowState supports **two persistence backends** via clean repository interfaces (`RepositoryFactory`):
+Focus Forge supports **two persistence backends** via clean repository interfaces (`RepositoryFactory`):
 
 1. **File Storage with Java I/O Streams (Default & Zero Setup)**:
    - Persists all focus sessions, application activities, and preferences to local structured files in `./data/`.
    - Uses low-level **`FileInputStream`**, **`BufferedInputStream`**, **`FileOutputStream`**, and **`BufferedOutputStream`** to demonstrate foundational Java I/O stream mechanics.
    - Requires **zero external database setup**, no server installation, and runs out-of-the-box on any computer.
 2. **PostgreSQL Database (Optional Enterprise Mode)**:
-   - For environments where a relational database server is desired, FlowState includes complete JDBC DAO implementations with HikariCP connection pooling and automatic schema initialization.
+   - For environments where a relational database server is desired, Focus Forge includes complete JDBC DAO implementations with HikariCP connection pooling and automatic schema initialization.
 
 ---
 
@@ -91,10 +91,10 @@ FlowState supports **two persistence backends** via clean repository interfaces 
 
 ## 🔒 Privacy Architecture
 
-FlowState was engineered with a strict **Privacy-First Mandate** (`TRAK-06`):
+Focus Forge was engineered with a strict **Privacy-First Mandate** (`TRAK-06`):
 - 🚫 **Zero Keylogging**: No keyboard hooks (`WH_KEYBOARD_LL`). Zero keystrokes captured.
 - 🚫 **Zero Screenshots**: No screen pixel reading or desktop capture.
-- 🚫 **Zero Clipboard Monitoring**: FlowState never inspects or interacts with the system clipboard.
+- 🚫 **Zero Clipboard Monitoring**: Focus Forge never inspects or interacts with the system clipboard.
 - 🚫 **Zero Web Surfing Inspection**: Only the active window title is recorded; full browser history or document contents are never accessed.
 - 🚫 **Exclusion Filtering**: Excluded applications are immediately discarded in memory and never persisted.
 
@@ -102,7 +102,7 @@ FlowState was engineered with a strict **Privacy-First Mandate** (`TRAK-06`):
 
 ## 📋 Prerequisites
 
-Before running FlowState, verify your system has:
+Before running Focus Forge, verify your system has:
 1. **Java Development Kit (JDK) 21 or newer** installed:
    ```bash
    java -version
@@ -117,28 +117,28 @@ Before running FlowState, verify your system has:
 
 ## 🗄️ Database Setup (Optional — Only if using PostgreSQL mode)
 
-FlowState runs out-of-the-box using Java file streams. If you wish to switch to PostgreSQL mode:
+Focus Forge runs out-of-the-box using Java file streams. If you wish to switch to PostgreSQL mode:
 
 ### Step 1: Create Database
 Open `psql` or pgAdmin and run:
 ```sql
-CREATE DATABASE flowstate;
+CREATE DATABASE Focus Forge;
 ```
 
 ### Step 2: Configure Credentials
-FlowState reads configuration from environment variables or `application.properties`.
+Focus Forge reads configuration from environment variables or `application.properties`.
 
 Option A: Set Environment Variables (Recommended):
 ```powershell
-$env:FLOWSTATE_DB_URL="jdbc:postgresql://localhost:5432/flowstate"
-$env:FLOWSTATE_DB_USER="postgres"
-$env:FLOWSTATE_DB_PASSWORD="your_password"
+$env:Focus Forge_DB_URL="jdbc:postgresql://localhost:5432/Focus Forge"
+$env:Focus Forge_DB_USER="postgres"
+$env:Focus Forge_DB_PASSWORD="your_password"
 ```
 
 Option B: Create `application.properties`:
 Create a file named `application.properties` in your working directory or in `src/main/resources/`:
 ```properties
-db.url=jdbc:postgresql://localhost:5432/flowstate
+db.url=jdbc:postgresql://localhost:5432/Focus Forge
 db.user=postgres
 db.password=your_password
 db.pool.size=5
@@ -165,17 +165,17 @@ mvn javafx:run
 ```
 Or run the main class directly:
 ```bash
-java -cp target/flowstate-1.0.0-SNAPSHOT.jar com.flowstate.Main
+java -cp target/Focus Forge-1.0.0-SNAPSHOT.jar com.Focus Forge.Main
 ```
 
 ### 3. Graceful Connection Recovery
-If PostgreSQL is unreachable at launch, FlowState will **not crash silently** or fall back to unstable in-memory storage. Instead, it displays an informative **Connection Error Recovery Screen** (`CORE-05`) detailing connection diagnostics and recommended recovery steps (e.g. verifying Windows `services.msc` or PostgreSQL port 5432) with a live **Retry Connection** button.
+If PostgreSQL is unreachable at launch, Focus Forge will **not crash silently** or fall back to unstable in-memory storage. Instead, it displays an informative **Connection Error Recovery Screen** (`CORE-05`) detailing connection diagnostics and recommended recovery steps (e.g. verifying Windows `services.msc` or PostgreSQL port 5432) with a live **Retry Connection** button.
 
 ---
 
 ## 🎓 Academic / B.Tech CSE Viva Reference
 
-When demonstrating FlowState for academic evaluations or technical project reviews, highlight these key design patterns:
+When demonstrating Focus Forge for academic evaluations or technical project reviews, highlight these key design patterns:
 
 ### 1. Object-Oriented Programming (OOP)
 - **Encapsulation**: Domain models (`FocusSession`, `ApplicationActivity`) maintain private state, guarded by strict transition methods (`start()`, `pause()`, `resume()`, `complete()`, `close()`).
@@ -202,3 +202,4 @@ When demonstrating FlowState for academic evaluations or technical project revie
 
 ## 📄 License
 This project is developed for educational and academic evaluation purposes under the MIT License.
+
