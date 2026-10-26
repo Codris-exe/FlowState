@@ -35,6 +35,7 @@ public class FlowStateApp extends Application {
         DistractionAnalyzer distractionAnalyzer = new DistractionAnalyzer(RepositoryFactory.getApplicationPreferenceRepository());
 
         ActivityTrackingService trackingService = ActivityTrackingService.getInstance();
+        trackingService.setActivityRepository(RepositoryFactory.getActivityRepository());
         trackingService.setDistractionAnalyzer(distractionAnalyzer);
         // Start native background tracking
         trackingService.start();

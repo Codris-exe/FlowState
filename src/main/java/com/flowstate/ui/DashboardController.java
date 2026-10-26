@@ -135,7 +135,22 @@ public class DashboardController implements Refreshable {
             Instant startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant();
             Instant endOfToday = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
 
-            List<ApplicationActivity> todayActivities = activityRepository.findByDateRange(startOfToday, endOfToday);
+            List<ApplicationActivity> todayActivities = new java.util.ArrayList<>(activityRepository.findByDateRange(startOfToday, endOfToday));
+
+            // Include current in-progress live activity if active
+            ApplicationActivity live = com.flowstate.tracking.ActivityTrackingService.getInstance().getCurrentActivity();
+            if (live != null && live.getStartedAt() != null && !live.getStartedAt().isBefore(startOfToday)) {
+                long dur = Math.max(1, java.time.Duration.between(live.getStartedAt(), Instant.now()).toSeconds());
+                ApplicationActivity liveCopy = new ApplicationActivity(
+                        live.getApplicationName(),
+                        live.getWindowTitle(),
+                        live.getStartedAt(),
+                        null,
+                        live.getActivityCategory()
+                );
+                liveCopy.setDurationSeconds(dur);
+                todayActivities.add(liveCopy);
+            }
 
             long productiveSec = 0;
             long neutralSec = 0;

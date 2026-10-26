@@ -25,7 +25,7 @@ public class ActivityTrackingService {
     private static final ActivityTrackingService INSTANCE = new ActivityTrackingService();
 
     private final ActivityTrackingProvider trackingProvider;
-    private final ActivityRepository activityRepository;
+    private ActivityRepository activityRepository;
     private final ScheduledExecutorService scheduler;
     private final boolean ownsScheduler;
 
@@ -41,7 +41,8 @@ public class ActivityTrackingService {
     private final long pollIntervalMs;
 
     public ActivityTrackingService() {
-        this(new WindowsNativeTrackingProvider(), null,
+        this(new WindowsNativeTrackingProvider(),
+                com.flowstate.storage.RepositoryFactory.getActivityRepository(),
                 Executors.newSingleThreadScheduledExecutor(r -> {
                     Thread t = new Thread(r, "FlowState-ActivityTracker");
                     t.setDaemon(true);
@@ -102,6 +103,14 @@ public class ActivityTrackingService {
 
     public boolean isTrackingEnabled() {
         return trackingEnabled.get();
+    }
+
+    public void setActivityRepository(ActivityRepository activityRepository) {
+        this.activityRepository = activityRepository;
+    }
+
+    public ActivityRepository getActivityRepository() {
+        return activityRepository;
     }
 
     public ApplicationActivity getCurrentActivity() {
@@ -198,9 +207,14 @@ public class ActivityTrackingService {
         ApplicationActivity prev = currentActivity.getAndSet(null);
         if (prev != null) {
             prev.close(now);
-            if (prev.getDurationSeconds() >= 1 && activityRepository != null) {
+            if (prev.getDurationSeconds() <= 0) {
+                prev.setDurationSeconds(1);
+            }
+            ActivityRepository repo = activityRepository != null ? activityRepository : com.flowstate.storage.RepositoryFactory.getActivityRepository();
+            if (repo != null) {
                 try {
-                    activityRepository.save(prev);
+                    repo.save(prev);
+                    logger.info("Saved finalized activity: {} duration: {}s", prev.getApplicationName(), prev.getDurationSeconds());
                 } catch (Exception e) {
                     logger.warn("Failed to persist application activity: {}", e.getMessage());
                 }

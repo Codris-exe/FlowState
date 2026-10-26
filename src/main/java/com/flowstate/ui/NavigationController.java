@@ -51,11 +51,16 @@ public class NavigationController {
         // Register tracking listener
         ActivityTrackingService.getInstance().addListener(new ActivityChangeListener() {
             @Override
-            public void onActivityChanged(com.flowstate.model.ApplicationActivity current, com.flowstate.model.ApplicationActivity previous) {}
+            public void onActivityChanged(com.flowstate.model.ApplicationActivity current, com.flowstate.model.ApplicationActivity previous) {
+                Platform.runLater(() -> refreshCurrentView());
+            }
 
             @Override
             public void onTrackingStateChanged(boolean trackingEnabled) {
-                Platform.runLater(() -> updateTrackingUi(trackingEnabled));
+                Platform.runLater(() -> {
+                    updateTrackingUi(trackingEnabled);
+                    refreshCurrentView();
+                });
             }
         });
 
@@ -90,6 +95,19 @@ public class NavigationController {
             service.pauseTracking();
         } else {
             service.resumeTracking();
+        }
+        refreshCurrentView();
+    }
+
+    public void refreshCurrentView() {
+        for (Object controller : controllerCache.values()) {
+            if (controller instanceof Refreshable) {
+                try {
+                    ((Refreshable) controller).refreshData();
+                } catch (Exception e) {
+                    logger.warn("Failed to refresh controller: {}", e.getMessage());
+                }
+            }
         }
     }
 
