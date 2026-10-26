@@ -1,0 +1,7 @@
+.planning/
+target/
+*.class
+.env
+.idea/
+*.iml
+
