@@ -53,7 +53,8 @@ public class AnalyticsController implements Refreshable {
     private final ActivityRepository activityRepository;
 
     public AnalyticsController() {
-        this(new FocusSessionRepositoryJDBC(), new ActivityRepositoryJDBC());
+        this(com.flowstate.storage.RepositoryFactory.getFocusSessionRepository(),
+             com.flowstate.storage.RepositoryFactory.getActivityRepository());
     }
 
     public AnalyticsController(FocusSessionRepository sessionRepository, ActivityRepository activityRepository) {
@@ -78,7 +79,7 @@ public class AnalyticsController implements Refreshable {
 
     @Override
     public void refreshData() {
-        if (!DatabaseManager.getInstance().isHealthy()) return;
+        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) return;
 
         String selected = cbTimeframe.getValue() != null ? cbTimeframe.getValue() : "Last 7 Days";
         CompletableFuture.runAsync(() -> loadAnalyticsData(selected))

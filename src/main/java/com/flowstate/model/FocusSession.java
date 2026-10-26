@@ -1,5 +1,6 @@
 package com.flowstate.model;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
@@ -8,7 +9,9 @@ import java.util.Objects;
  * Core domain entity representing a focus session.
  * Uses timestamp-anchored elapsed math to prevent clock drift during minimize or sleep.
  */
-public class FocusSession {
+public class FocusSession implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String title;
     private SessionCategory category;

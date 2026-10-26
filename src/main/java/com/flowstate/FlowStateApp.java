@@ -36,21 +36,15 @@ public class FlowStateApp extends Application {
 
         logger.info("Initializing FlowState Desktop Application...");
 
-        // 1. Initialize Database
-        DatabaseManager dbManager = DatabaseManager.getInstance();
-        boolean dbHealthy = dbManager.initialize();
+        // 1. Initialize Local File Storage
+        com.flowstate.storage.FileStorageManager.getInstance().initialize();
+        com.flowstate.storage.RepositoryFactory.setFileStorageMode();
 
-        if (!dbHealthy) {
-            logger.warn("Database connection unavailable on startup. Presenting recovery screen.");
-            showDatabaseRecoveryScreen(dbManager);
-            return;
-        }
-
-        // 2. Wire Domain Services with JDBC Repositories
+        // 2. Wire Domain Services with File-based Repositories
         FocusSessionService sessionService = FocusSessionService.getInstance();
-        sessionService.setRepository(new FocusSessionRepositoryJDBC(dbManager));
+        sessionService.setRepository(com.flowstate.storage.RepositoryFactory.getFocusSessionRepository());
 
-        DistractionAnalyzer distractionAnalyzer = new DistractionAnalyzer(new ApplicationPreferenceRepositoryJDBC(dbManager));
+        DistractionAnalyzer distractionAnalyzer = new DistractionAnalyzer(com.flowstate.storage.RepositoryFactory.getApplicationPreferenceRepository());
 
         ActivityTrackingService trackingService = ActivityTrackingService.getInstance();
         trackingService.setDistractionAnalyzer(distractionAnalyzer);

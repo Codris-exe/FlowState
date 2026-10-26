@@ -1,12 +1,15 @@
 package com.flowstate.model;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
 /**
  * Global application and user preferences entity.
  */
-public class UserSettings {
+public class UserSettings implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private int dailyFocusGoalMinutes;
     private String theme;

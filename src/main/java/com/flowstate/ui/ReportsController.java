@@ -33,8 +33,8 @@ public class ReportsController implements Refreshable {
     @FXML private Label lblExportStatus;
 
     private final ReportExportService exportService = new ReportExportService();
-    private final FocusSessionRepository sessionRepository = new FocusSessionRepositoryJDBC();
-    private final ActivityRepository activityRepository = new ActivityRepositoryJDBC();
+    private final FocusSessionRepository sessionRepository = com.flowstate.storage.RepositoryFactory.getFocusSessionRepository();
+    private final ActivityRepository activityRepository = com.flowstate.storage.RepositoryFactory.getActivityRepository();
 
     @Override
     public void refreshData() {

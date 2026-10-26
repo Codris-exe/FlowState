@@ -74,7 +74,8 @@ public class DashboardController implements Refreshable {
     private final ObservableList<FocusSession> recentSessionsData = FXCollections.observableArrayList();
 
     public DashboardController() {
-        this(new FocusSessionRepositoryJDBC(), new ActivityRepositoryJDBC());
+        this(com.flowstate.storage.RepositoryFactory.getFocusSessionRepository(),
+             com.flowstate.storage.RepositoryFactory.getActivityRepository());
     }
 
     public DashboardController(FocusSessionRepository sessionRepository, ActivityRepository activityRepository) {
@@ -126,7 +127,7 @@ public class DashboardController implements Refreshable {
 
     @Override
     public void refreshData() {
-        if (!DatabaseManager.getInstance().isHealthy()) {
+        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) {
             return;
         }
 

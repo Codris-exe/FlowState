@@ -56,8 +56,9 @@ public class ActivityMonitorController implements ActivityChangeListener, Refres
     private FilteredList<ApplicationActivity> filteredList;
 
     public ActivityMonitorController() {
-        this(ActivityTrackingService.getInstance(), new ActivityRepositoryJDBC(),
-                new DistractionAnalyzer(new ApplicationPreferenceRepositoryJDBC()));
+        this(ActivityTrackingService.getInstance(),
+                com.flowstate.storage.RepositoryFactory.getActivityRepository(),
+                new DistractionAnalyzer(com.flowstate.storage.RepositoryFactory.getApplicationPreferenceRepository()));
     }
 
     public ActivityMonitorController(ActivityTrackingService trackingService,
@@ -110,7 +111,7 @@ public class ActivityMonitorController implements ActivityChangeListener, Refres
     public void refreshData() {
         updateActiveDisplay(trackingService.getCurrentActivity());
 
-        if (!DatabaseManager.getInstance().isHealthy()) return;
+        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) return;
 
         CompletableFuture.runAsync(() -> {
             try {

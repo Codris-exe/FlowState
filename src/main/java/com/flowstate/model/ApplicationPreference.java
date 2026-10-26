@@ -1,11 +1,14 @@
 package com.flowstate.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * User configuration and classification preference for a specific application.
  */
-public class ApplicationPreference {
+public class ApplicationPreference implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String applicationIdentifier;
     private String displayName;

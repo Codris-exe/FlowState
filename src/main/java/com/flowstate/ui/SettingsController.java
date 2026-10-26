@@ -52,7 +52,9 @@ public class SettingsController implements Refreshable {
     private final ObservableList<ApplicationPreference> preferencesList = FXCollections.observableArrayList();
 
     public SettingsController() {
-        this(new ApplicationPreferenceRepositoryJDBC(), new ActivityRepositoryJDBC(), new FocusSessionRepositoryJDBC());
+        this(com.flowstate.storage.RepositoryFactory.getApplicationPreferenceRepository(),
+             com.flowstate.storage.RepositoryFactory.getActivityRepository(),
+             com.flowstate.storage.RepositoryFactory.getFocusSessionRepository());
     }
 
     public SettingsController(ApplicationPreferenceRepository preferenceRepository,
@@ -146,7 +148,7 @@ public class SettingsController implements Refreshable {
 
     @Override
     public void refreshData() {
-        if (!DatabaseManager.getInstance().isHealthy()) return;
+        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) return;
 
         CompletableFuture.runAsync(() -> {
             try {

@@ -55,7 +55,8 @@ public class SessionHistoryController implements Refreshable {
     private FilteredList<FocusSession> filteredList;
 
     public SessionHistoryController() {
-        this(new FocusSessionRepositoryJDBC(), new ActivityRepositoryJDBC());
+        this(com.flowstate.storage.RepositoryFactory.getFocusSessionRepository(),
+             com.flowstate.storage.RepositoryFactory.getActivityRepository());
     }
 
     public SessionHistoryController(FocusSessionRepository sessionRepository, ActivityRepository activityRepository) {
@@ -175,7 +176,7 @@ public class SessionHistoryController implements Refreshable {
 
     @Override
     public void refreshData() {
-        if (!DatabaseManager.getInstance().isHealthy()) return;
+        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) return;
 
         CompletableFuture.runAsync(() -> {
             try {

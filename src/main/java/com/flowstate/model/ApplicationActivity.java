@@ -1,5 +1,6 @@
 package com.flowstate.model;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
@@ -7,7 +8,9 @@ import java.util.Objects;
 /**
  * Domain entity representing an active application usage interval.
  */
-public class ApplicationActivity {
+public class ApplicationActivity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String applicationName;
     private String windowTitle;
