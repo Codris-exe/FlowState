@@ -1,12 +1,9 @@
 package com.flowstate.ui;
 
-import com.flowstate.config.DatabaseManager;
 import com.flowstate.model.AppCategory;
 import com.flowstate.model.FocusSession;
 import com.flowstate.repository.ActivityRepository;
-import com.flowstate.repository.ActivityRepositoryJDBC;
 import com.flowstate.repository.FocusSessionRepository;
-import com.flowstate.repository.FocusSessionRepositoryJDBC;
 import com.flowstate.ui.model.AppUsageSummary;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -127,10 +124,6 @@ public class DashboardController implements Refreshable {
 
     @Override
     public void refreshData() {
-        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) {
-            return;
-        }
-
         CompletableFuture.runAsync(this::loadDashboardMetrics)
                 .exceptionally(ex -> {
                     logger.error("Failed to load dashboard metrics: {}", ex.getMessage());

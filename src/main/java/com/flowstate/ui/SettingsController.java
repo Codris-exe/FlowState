@@ -1,7 +1,6 @@
 package com.flowstate.ui;
 
 import com.flowstate.analytics.DistractionAnalyzer;
-import com.flowstate.config.DatabaseManager;
 import com.flowstate.model.AppCategory;
 import com.flowstate.model.ApplicationPreference;
 import com.flowstate.model.FocusSession;
@@ -148,8 +147,6 @@ public class SettingsController implements Refreshable {
 
     @Override
     public void refreshData() {
-        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) return;
-
         CompletableFuture.runAsync(() -> {
             try {
                 List<ApplicationPreference> all = preferenceRepository.findAll();

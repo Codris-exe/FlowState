@@ -1,6 +1,5 @@
 package com.flowstate.service;
 
-import com.flowstate.config.DatabaseManager;
 import com.flowstate.tracking.ActivityTrackingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Coordinates deterministic application lifecycle shutdown and resource cleanup.
  *
  * Registers JVM shutdown hooks and handles graceful termination of background
- * scheduled executor threads and database connection pools.
+ * scheduled executor threads and file services.
  */
 public class LifecycleManager {
     private static final Logger logger = LoggerFactory.getLogger(LifecycleManager.class);
@@ -39,7 +38,7 @@ public class LifecycleManager {
     }
 
     /**
-     * Executes clean shutdown of all background services, schedulers, and connection pools.
+     * Executes clean shutdown of all background services and schedulers.
      */
     public synchronized void shutdownAll() {
         if (!shutdownExecuted.compareAndSet(false, true)) {
@@ -62,14 +61,6 @@ public class LifecycleManager {
             logger.info("Focus session timer service stopped.");
         } catch (Exception e) {
             logger.warn("Error during focus session shutdown: {}", e.getMessage());
-        }
-
-        // 3. Close HikariCP database connection pool
-        try {
-            DatabaseManager.getInstance().close();
-            logger.info("Database connection pool closed.");
-        } catch (Exception e) {
-            logger.warn("Error closing database connection pool: {}", e.getMessage());
         }
 
         logger.info("FlowState system shutdown completed cleanly.");

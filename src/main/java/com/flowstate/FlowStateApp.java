@@ -1,23 +1,16 @@
 package com.flowstate;
 
 import com.flowstate.analytics.DistractionAnalyzer;
-import com.flowstate.config.DatabaseManager;
-import com.flowstate.repository.ActivityRepositoryJDBC;
-import com.flowstate.repository.ApplicationPreferenceRepositoryJDBC;
-import com.flowstate.repository.FocusSessionRepositoryJDBC;
 import com.flowstate.service.FocusSessionService;
+import com.flowstate.service.LifecycleManager;
+import com.flowstate.storage.FileStorageManager;
+import com.flowstate.storage.RepositoryFactory;
 import com.flowstate.tracking.ActivityTrackingService;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,15 +29,14 @@ public class FlowStateApp extends Application {
 
         logger.info("Initializing FlowState Desktop Application...");
 
-        // 1. Initialize Local File Storage
-        com.flowstate.storage.FileStorageManager.getInstance().initialize();
-        com.flowstate.storage.RepositoryFactory.setFileStorageMode();
+        // 1. Initialize Local File Storage Directory
+        FileStorageManager.getInstance().initialize();
 
         // 2. Wire Domain Services with File-based Repositories
         FocusSessionService sessionService = FocusSessionService.getInstance();
-        sessionService.setRepository(com.flowstate.storage.RepositoryFactory.getFocusSessionRepository());
+        sessionService.setRepository(RepositoryFactory.getFocusSessionRepository());
 
-        DistractionAnalyzer distractionAnalyzer = new DistractionAnalyzer(com.flowstate.storage.RepositoryFactory.getApplicationPreferenceRepository());
+        DistractionAnalyzer distractionAnalyzer = new DistractionAnalyzer(RepositoryFactory.getApplicationPreferenceRepository());
 
         ActivityTrackingService trackingService = ActivityTrackingService.getInstance();
         trackingService.setDistractionAnalyzer(distractionAnalyzer);
@@ -81,58 +73,13 @@ public class FlowStateApp extends Application {
         }
     }
 
-    private void showDatabaseRecoveryScreen(DatabaseManager dbManager) {
-        VBox root = new VBox(16);
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(32));
-        root.getStyleClass().add("content-area");
-
-        Label title = new Label("⚠️  Database Connection Error");
-        title.getStyleClass().add("view-title");
-        title.setStyle("-fx-text-fill: #EF4444;");
-
-        Label desc = new Label("FlowState could not establish a connection to PostgreSQL.\nPlease review the diagnostics and recommended recovery steps below:");
-        desc.getStyleClass().add("empty-state-text");
-
-        TextArea diagnosticsArea = new TextArea(dbManager.getDiagnostics());
-        diagnosticsArea.setEditable(false);
-        diagnosticsArea.setPrefHeight(260);
-        diagnosticsArea.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
-
-        Button btnRetry = new Button("🔄  Retry Connection");
-        btnRetry.getStyleClass().add("btn-primary");
-        btnRetry.setOnAction(e -> {
-            if (dbManager.initialize()) {
-                start(primaryStage);
-            } else {
-                diagnosticsArea.setText(dbManager.getDiagnostics());
-            }
-        });
-
-        Button btnExit = new Button("Exit Application");
-        btnExit.getStyleClass().add("btn-secondary");
-        btnExit.setOnAction(e -> Platform.exit());
-
-        javafx.scene.layout.HBox buttons = new javafx.scene.layout.HBox(12, btnRetry, btnExit);
-        buttons.setAlignment(Pos.CENTER);
-
-        root.getChildren().addAll(title, desc, diagnosticsArea, buttons);
-
-        Scene scene = new Scene(root, 720, 520);
-        scene.getStylesheets().add(getClass().getResource("/css/flowstate-theme.css").toExternalForm());
-
-        primaryStage.setTitle("FlowState — Database Setup Required");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-
     @Override
     public void stop() {
         shutdownServices();
     }
 
     private void shutdownServices() {
-        com.flowstate.service.LifecycleManager.getInstance().shutdownAll();
+        LifecycleManager.getInstance().shutdownAll();
     }
 
     public static void main(String[] args) {

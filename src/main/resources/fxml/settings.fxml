@@ -77,7 +77,7 @@
         <!-- Danger Zone Card: Data Reset & Purge -->
         <VBox spacing="14.0" styleClass="card" style="-fx-border-color: #EF4444; -fx-background-color: #1A111E;">
             <Label style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 14px;" text="⚠️ DANGER ZONE: DATA MANAGEMENT"/>
-            <Label styleClass="empty-state-text" text="Purge historical logs or reset the database. These actions require two-step confirmation and cannot be reversed."/>
+            <Label styleClass="empty-state-text" text="Purge historical logs or reset stored data files. These actions require two-step confirmation and cannot be reversed."/>
 
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <Button onAction="#handleClearActivities" styleClass="btn-secondary" style="-fx-text-fill: #F59E0B; -fx-border-color: #F59E0B;" text="Clear Activity History Logs"/>

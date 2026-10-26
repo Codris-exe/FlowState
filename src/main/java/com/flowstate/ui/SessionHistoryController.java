@@ -1,13 +1,10 @@
 package com.flowstate.ui;
 
-import com.flowstate.config.DatabaseManager;
 import com.flowstate.model.FocusSession;
 import com.flowstate.model.SessionCategory;
 import com.flowstate.model.SessionStatus;
 import com.flowstate.repository.ActivityRepository;
-import com.flowstate.repository.ActivityRepositoryJDBC;
 import com.flowstate.repository.FocusSessionRepository;
-import com.flowstate.repository.FocusSessionRepositoryJDBC;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -176,8 +173,6 @@ public class SessionHistoryController implements Refreshable {
 
     @Override
     public void refreshData() {
-        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) return;
-
         CompletableFuture.runAsync(() -> {
             try {
                 List<FocusSession> all = sessionRepository.findAll();

@@ -1,12 +1,9 @@
 package com.flowstate.ui;
 
 import com.flowstate.analytics.DistractionAnalyzer;
-import com.flowstate.config.DatabaseManager;
 import com.flowstate.model.AppCategory;
 import com.flowstate.model.ApplicationActivity;
 import com.flowstate.repository.ActivityRepository;
-import com.flowstate.repository.ActivityRepositoryJDBC;
-import com.flowstate.repository.ApplicationPreferenceRepositoryJDBC;
 import com.flowstate.tracking.ActivityChangeListener;
 import com.flowstate.tracking.ActivityTrackingService;
 import javafx.application.Platform;
@@ -110,8 +107,6 @@ public class ActivityMonitorController implements ActivityChangeListener, Refres
     @Override
     public void refreshData() {
         updateActiveDisplay(trackingService.getCurrentActivity());
-
-        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) return;
 
         CompletableFuture.runAsync(() -> {
             try {

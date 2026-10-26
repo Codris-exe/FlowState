@@ -1,14 +1,11 @@
 package com.flowstate.ui;
 
-import com.flowstate.config.DatabaseManager;
 import com.flowstate.model.AppCategory;
 import com.flowstate.model.ApplicationActivity;
 import com.flowstate.model.FocusSession;
 import com.flowstate.model.SessionCategory;
 import com.flowstate.repository.ActivityRepository;
-import com.flowstate.repository.ActivityRepositoryJDBC;
 import com.flowstate.repository.FocusSessionRepository;
-import com.flowstate.repository.FocusSessionRepositoryJDBC;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -79,8 +76,6 @@ public class AnalyticsController implements Refreshable {
 
     @Override
     public void refreshData() {
-        if (!com.flowstate.storage.RepositoryFactory.isFileStorageMode() && !DatabaseManager.getInstance().isHealthy()) return;
-
         String selected = cbTimeframe.getValue() != null ? cbTimeframe.getValue() : "Last 7 Days";
         CompletableFuture.runAsync(() -> loadAnalyticsData(selected))
                 .exceptionally(ex -> {
