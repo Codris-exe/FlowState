@@ -256,7 +256,7 @@ public class DashboardController implements Refreshable {
     public void handleViewAllSessions(ActionEvent event) {
         NavigationController nav = NavigationController.getInstance();
         if (nav != null) {
-            nav.navigateTo("session-history");
+            nav.navigateTo("analytics");
         }
     }
 }

@@ -10,62 +10,67 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane fx:id="mainRoot" prefHeight="760.0" prefWidth="1180.0" styleClass="app-window"
+<BorderPane fx:id="mainRoot" prefHeight="760.0" prefWidth="1200.0" styleClass="app-window"
             stylesheets="@../css/flowstate-theme.css"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.flowstate.ui.NavigationController">
 
-    <!-- Persistent Left Sidebar -->
+    <!-- Persistent Left Sidebar (Deep Focus Style) -->
     <left>
-        <VBox prefWidth="250.0" spacing="8.0" styleClass="sidebar">
+        <VBox prefWidth="240.0" spacing="6.0" styleClass="sidebar">
             <padding>
-                <Insets bottom="20.0" left="16.0" right="16.0" top="24.0"/>
+                <Insets bottom="20.0" left="16.0" right="16.0" top="20.0"/>
             </padding>
 
             <!-- Brand Header -->
-            <VBox spacing="4.0">
-                <HBox alignment="CENTER_LEFT" spacing="8.0">
-                    <Label styleClass="brand-title" text="FlowState"/>
-                    <Label styleClass="brand-badge" text="PRO"/>
-                </HBox>
-                <Label style="-fx-text-fill: #64748B; -fx-font-size: 11px;" text="Smart Productivity Analyzer"/>
-            </VBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label style="-fx-font-size: 18px;" text="👁"/>
+                <Label styleClass="brand-title" text="Deep Focus"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label styleClass="brand-badge" text="PRO"/>
+            </HBox>
 
-            <Region prefHeight="16.0"/>
+            <Region prefHeight="10.0"/>
 
-            <!-- Navigation Buttons -->
+            <!-- + New Session Action Button -->
+            <Button fx:id="btnNewSession" maxWidth="Infinity" onAction="#handleNewSession"
+                    styleClass="btn-new-session" text="+  New Session"/>
+
+            <Region prefHeight="8.0"/>
+
+            <!-- Sidebar Navigation Category Header -->
+            <Label styleClass="sidebar-section-header" text="NAVIGATION"/>
+
+            <!-- Core Navigation Items -->
             <VBox spacing="4.0" VBox.vgrow="ALWAYS">
                 <Button fx:id="btnDashboard" maxWidth="Infinity" onAction="#handleNavDashboard"
                         styleClass="nav-button, active" text="📊  Dashboard"/>
 
                 <Button fx:id="btnFocusSessions" maxWidth="Infinity" onAction="#handleNavFocusSessions"
-                        styleClass="nav-button" text="⏱  Focus Sessions"/>
-
-                <Button fx:id="btnActivityMonitor" maxWidth="Infinity" onAction="#handleNavActivityMonitor"
-                        styleClass="nav-button" text="🖥  Activity Monitor"/>
+                        styleClass="nav-button" text="⏱  Focus Session"/>
 
                 <Button fx:id="btnAnalytics" maxWidth="Infinity" onAction="#handleNavAnalytics"
                         styleClass="nav-button" text="📈  Analytics"/>
 
-                <Button fx:id="btnSessionHistory" maxWidth="Infinity" onAction="#handleNavSessionHistory"
-                        styleClass="nav-button" text="📜  Session History"/>
+                <Button fx:id="btnActivityMonitor" maxWidth="Infinity" onAction="#handleNavActivityMonitor"
+                        styleClass="nav-button" text="🌐  Activity Monitor"/>
 
-                <Button fx:id="btnReports" maxWidth="Infinity" onAction="#handleNavReports"
-                        styleClass="nav-button" text="📁  Reports &amp; Export"/>
+                <Region prefHeight="12.0"/>
+                <Label styleClass="sidebar-section-header" text="PREFERENCES"/>
 
                 <Button fx:id="btnSettings" maxWidth="Infinity" onAction="#handleNavSettings"
                         styleClass="nav-button" text="⚙  Settings"/>
             </VBox>
 
-            <!-- Bottom Tracking Status Card -->
-            <VBox spacing="10.0" styleClass="card" style="-fx-padding: 12px; -fx-background-color: #0A0F1D;">
+            <!-- Bottom Background Tracking Status -->
+            <VBox spacing="8.0" styleClass="card" style="-fx-padding: 12px; -fx-background-color: #101117;">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Circle fx:id="trackingStatusDot" fill="#10B981" radius="4.0"/>
-                    <Label fx:id="lblTrackingStatus" style="-fx-font-size: 12px; -fx-text-fill: #94A3B8; -fx-font-weight: 600;"
+                    <Label fx:id="lblTrackingStatus" style="-fx-font-size: 12px; -fx-text-fill: #9CA3AF; -fx-font-weight: 600;"
                            text="Tracking: Active"/>
                 </HBox>
                 <Button fx:id="btnToggleTracking" maxWidth="Infinity" onAction="#handleToggleTracking"
-                        styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 6px 10px;"
+                        styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 5px 10px;"
                         text="Pause Tracking"/>
             </VBox>
         </VBox>

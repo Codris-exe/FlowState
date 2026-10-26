@@ -20,18 +20,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Controller for the persistent sidebar navigation and view swapping.
+ * Controller for the streamlined sidebar navigation and view swapping.
  */
 public class NavigationController {
     private static final Logger logger = LoggerFactory.getLogger(NavigationController.class);
     private static NavigationController instance;
 
+    @FXML private Button btnNewSession;
     @FXML private Button btnDashboard;
     @FXML private Button btnFocusSessions;
-    @FXML private Button btnActivityMonitor;
     @FXML private Button btnAnalytics;
-    @FXML private Button btnSessionHistory;
-    @FXML private Button btnReports;
+    @FXML private Button btnActivityMonitor;
     @FXML private Button btnSettings;
 
     @FXML private StackPane contentArea;
@@ -70,6 +69,12 @@ public class NavigationController {
     }
 
     @FXML
+    public void handleNewSession(ActionEvent event) {
+        setActiveButton(btnFocusSessions);
+        navigateTo("focus-timer");
+    }
+
+    @FXML
     public void handleNavDashboard(ActionEvent event) {
         setActiveButton(btnDashboard);
         navigateTo("dashboard");
@@ -82,27 +87,15 @@ public class NavigationController {
     }
 
     @FXML
-    public void handleNavActivityMonitor(ActionEvent event) {
-        setActiveButton(btnActivityMonitor);
-        navigateTo("activity-monitor");
-    }
-
-    @FXML
     public void handleNavAnalytics(ActionEvent event) {
         setActiveButton(btnAnalytics);
         navigateTo("analytics");
     }
 
     @FXML
-    public void handleNavSessionHistory(ActionEvent event) {
-        setActiveButton(btnSessionHistory);
-        navigateTo("session-history");
-    }
-
-    @FXML
-    public void handleNavReports(ActionEvent event) {
-        setActiveButton(btnReports);
-        navigateTo("reports");
+    public void handleNavActivityMonitor(ActionEvent event) {
+        setActiveButton(btnActivityMonitor);
+        navigateTo("activity-monitor");
     }
 
     @FXML
@@ -113,101 +106,66 @@ public class NavigationController {
 
     @FXML
     public void handleToggleTracking(ActionEvent event) {
-        ActivityTrackingService tracker = ActivityTrackingService.getInstance();
-        if (tracker.isTrackingEnabled()) {
-            tracker.pauseTracking();
+        ActivityTrackingService service = ActivityTrackingService.getInstance();
+        if (service.isTrackingEnabled()) {
+            service.pauseTracking();
         } else {
-            tracker.resumeTracking();
+            service.resumeTracking();
+        }
+    }
+
+    public void navigateToFocusTimer() {
+        handleNewSession(null);
+    }
+
+    private void updateTrackingUi(boolean isTracking) {
+        if (isTracking) {
+            trackingStatusDot.setFill(Color.web("#10B981"));
+            lblTrackingStatus.setText("Tracking: Active");
+            btnToggleTracking.setText("Pause Tracking");
+        } else {
+            trackingStatusDot.setFill(Color.web("#EF4444"));
+            lblTrackingStatus.setText("Tracking: Paused");
+            btnToggleTracking.setText("Resume Tracking");
+        }
+    }
+
+    private void setActiveButton(Button button) {
+        if (currentActiveBtn != null) {
+            currentActiveBtn.getStyleClass().remove("active");
+        }
+        currentActiveBtn = button;
+        if (currentActiveBtn != null && !currentActiveBtn.getStyleClass().contains("active")) {
+            currentActiveBtn.getStyleClass().add("active");
         }
     }
 
     public void navigateTo(String viewName) {
         try {
-            Node view = loadView(viewName);
-            if (view != null) {
-                contentArea.getChildren().setAll(view);
-
-                // Notify controller if it has a refresh hook
+            Node viewNode;
+            if (viewCache.containsKey(viewName)) {
+                viewNode = viewCache.get(viewName);
                 Object controller = controllerCache.get(viewName);
-                if (controller instanceof Refreshable refreshable) {
-                    refreshable.refreshData();
+                if (controller instanceof Refreshable) {
+                    ((Refreshable) controller).refreshData();
+                }
+            } else {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/" + viewName + ".fxml"));
+                viewNode = loader.load();
+                Object controller = loader.getController();
+
+                viewCache.put(viewName, viewNode);
+                controllerCache.put(viewName, controller);
+
+                if (controller instanceof Refreshable) {
+                    ((Refreshable) controller).refreshData();
                 }
             }
-        } catch (Exception e) {
-            logger.error("Error navigating to view '{}': {}", viewName, e.getMessage(), e);
-        }
-    }
 
-    public void navigateToFocusTimer() {
-        setActiveButton(btnFocusSessions);
-        navigateTo("focus-timer");
-    }
-
-    private Node loadView(String viewName) {
-        if (viewCache.containsKey(viewName)) {
-            return viewCache.get(viewName);
-        }
-
-        String fxmlPath = "/fxml/" + viewName + ".fxml";
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Node node = loader.load();
-            Object controller = loader.getController();
-
-            viewCache.put(viewName, node);
-            if (controller != null) {
-                controllerCache.put(viewName, controller);
-            }
-            return node;
+            contentArea.getChildren().setAll(viewNode);
+            logger.debug("Swapped view to: {}", viewName);
         } catch (IOException e) {
-            logger.warn("View '{}' not yet available ({}). Showing placeholder.", fxmlPath, e.getMessage());
-            return createPlaceholderView(viewName);
-        }
-    }
-
-    private Node createPlaceholderView(String viewName) {
-        Label title = new Label(viewName.replace("-", " ").toUpperCase());
-        title.getStyleClass().add("view-title");
-        Label desc = new Label("This module is currently being configured.");
-        desc.getStyleClass().add("empty-state-text");
-
-        javafx.scene.layout.VBox box = new javafx.scene.layout.VBox(12, title, desc);
-        box.setAlignment(javafx.geometry.Pos.CENTER);
-        box.getStyleClass().add("card");
-        return box;
-    }
-
-    private void setActiveButton(Button btn) {
-        if (currentActiveBtn != null) {
-            currentActiveBtn.getStyleClass().remove("active");
-        }
-        if (btn != null) {
-            if (!btn.getStyleClass().contains("active")) {
-                btn.getStyleClass().add("active");
-            }
-            currentActiveBtn = btn;
-        }
-    }
-
-    private void updateTrackingUi(boolean enabled) {
-        if (trackingStatusDot == null || lblTrackingStatus == null || btnToggleTracking == null) return;
-
-        if (enabled) {
-            trackingStatusDot.setFill(Color.web("#10B981"));
-            lblTrackingStatus.setText("Tracking: Active");
-            btnToggleTracking.setText("Pause Tracking");
-            btnToggleTracking.getStyleClass().removeAll("btn-primary", "btn-warning");
-            if (!btnToggleTracking.getStyleClass().contains("btn-secondary")) {
-                btnToggleTracking.getStyleClass().add("btn-secondary");
-            }
-        } else {
-            trackingStatusDot.setFill(Color.web("#F59E0B"));
-            lblTrackingStatus.setText("Tracking: Paused");
-            btnToggleTracking.setText("Resume Tracking");
-            btnToggleTracking.getStyleClass().removeAll("btn-secondary");
-            if (!btnToggleTracking.getStyleClass().contains("btn-primary")) {
-                btnToggleTracking.getStyleClass().add("btn-primary");
-            }
+            logger.error("Failed to load view: /fxml/{}.fxml - {}", viewName, e.getMessage(), e);
         }
     }
 }

@@ -66,17 +66,14 @@ Here is what every package and class does in just 1 sentence:
 
 ### 6. `com.flowstate.service` (Business Services)
 - **`FocusSessionService.java`**: Manages session state (`startSession`, `pauseSession`, `resumeSession`, `completeSession`, `cancelSession`). Uses wall-clock math (`java.time.Instant`) to avoid timer drift.
-- **`ReportExportService.java`**: Streams session and activity data into RFC-4180 compliant CSV files using `FileOutputStream`.
 - **`LifecycleManager.java`**: Registers `Runtime.getRuntime().addShutdownHook()` to cleanly shut down background threads when the app closes.
 
-### 7. `com.flowstate.ui` (JavaFX Controllers)
-- **`NavigationController.java`**: Manages the left sidebar and switches views in the center area.
-- **`DashboardController.java`**: Controls the home screen (today's stats, 7-day bar chart, top apps).
-- **`FocusTimerController.java`**: Controls the focus timer, countdown clock, presets, and reflection dialog.
-- **`ActivityMonitorController.java`**: Displays live foreground window spotlight and recent activity stream table.
-- **`AnalyticsController.java`**: Displays timeframe charts, category distributions, and distraction trends.
-- **`SessionHistoryController.java`**: Searchable session history table with live filtering, note editor, and delete options.
-- **`ReportsController.java`**: CSV export screen.
+### 7. `com.flowstate.ui` (JavaFX Controllers - Deep Focus / RIZE Aesthetic)
+- **`NavigationController.java`**: Manages the sleek left sidebar with `+ New Session` action and seamless view switching.
+- **`DashboardController.java`**: Home screen with today's focus metrics, daily goal progress, 7-day focus chart, and top apps.
+- **`FocusTimerController.java`**: Deep-work countdown timer with presets (15m, 25m, 45m, 60m), real-time distraction counter, and session notes.
+- **`AnalyticsController.java`**: Image 1 replica displaying the 4 core metric cards (`Total Sessions`, `Total Focus Time`, `Longest Session`, `Avg Session`), daily focus time trend chart, and category breakdown.
+- **`ActivityMonitorController.java`**: Image 2 replica displaying active foreground window spotlight, timeline status, and application categorization stream.
 - **`SettingsController.java`**: User goal settings and custom application classification rules.
 
 ---
@@ -131,8 +128,8 @@ Here is what every package and class does in just 1 sentence:
 ### Q9: How do you handle application shutdown cleanly?
 > **Answer**: *"We use `LifecycleManager`, which registers a JVM shutdown hook using `Runtime.getRuntime().addShutdownHook()`. When the user closes the window or presses Ctrl+C, the hook gracefully shuts down the `ScheduledExecutorService` pools, flushes any pending file writes, and ensures no orphan background threads remain."*
 
-### Q10: How do you export reports?
-> **Answer**: *"In `ReportExportService`, we export session history and activity logs to CSV format using Java `FileOutputStream` and `BufferedOutputStream`. We adhere to RFC 4180 standard escaping for special characters like double quotes, commas, and newlines so the generated files open cleanly in Microsoft Excel or Google Sheets."*
+### Q10: How did you design the UI/UX architecture?
+> **Answer**: *"We designed the user interface inspired by modern productivity applications like Deep Focus and RIZE. The application uses a pitch-black dark theme with `#13141B` cards, soft purple and ice-blue accents, smooth charts, and a clean persistent sidebar with a prominent `+ New Session` button. The UI separates views into FXML declarative layouts and CSS stylesheets, keeping presentation strictly separated from Java business logic and background services."*
 
 ---
 

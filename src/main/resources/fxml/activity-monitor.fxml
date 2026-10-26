@@ -22,61 +22,65 @@
             <Insets bottom="32.0" left="28.0" right="28.0" top="16.0"/>
         </padding>
 
-        <!-- View Header -->
+        <!-- View Header (RIZE Style) -->
         <HBox alignment="CENTER_LEFT" spacing="16.0">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label styleClass="view-title" text="Live Activity Monitor"/>
-                <Label styleClass="view-subtitle" text="Real-time foreground window detection and categorized application intervals."/>
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Label styleClass="view-title" text="Activity"/>
+                    <Label styleClass="date-pill" text="Timeline &amp; Live Tracking"/>
+                </HBox>
+                <Label styleClass="view-subtitle" text="Real-time native Windows foreground detection and categorized usage"/>
             </VBox>
-            <Button onAction="#handleRefresh" styleClass="btn-secondary" text="🔄  Refresh Log"/>
+            <Button onAction="#handleRefresh" styleClass="btn-secondary" text="🔄  Refresh"/>
         </HBox>
 
-        <!-- Active Window Spotlight Card -->
-        <VBox spacing="14.0" styleClass="card" style="-fx-background-color: #111A2D; -fx-border-color: #8B5CF6;">
+        <!-- Active Window Spotlight Card (RIZE Timeline Bar Style) -->
+        <VBox spacing="14.0" styleClass="card" style="-fx-border-color: #8B5CF6; -fx-border-width: 1px 1px 1px 4px;">
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <Circle fx:id="liveIndicatorDot" fill="#10B981" radius="5.0"/>
-                <Label styleClass="card-title" text="CURRENT FOREGROUND APPLICATION"/>
+                <Circle fx:id="liveIndicatorDot" fill="#10B981" radius="4.0"/>
+                <Label styleClass="card-title" text="ACTIVE FOREGROUND APPLICATION"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="lblCurrentCategoryBadge"
-                       style="-fx-background-color: rgba(139, 92, 246, 0.2); -fx-text-fill: #8B5CF6; -fx-padding: 3px 10px; -fx-background-radius: 10px; -fx-font-weight: bold; -fx-font-size: 11px;"
-                       text="PRODUCTIVE"/>
+                <Label fx:id="lblCurrentCategoryBadge" styleClass="badge-productive" text="PRODUCTIVE"/>
             </HBox>
 
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                    <Label fx:id="lblActiveProcessName" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #F8FAFC;" text="idea64.exe"/>
-                    <Label fx:id="lblActiveWindowTitle" style="-fx-font-size: 13px; -fx-text-fill: #94A3B8;" text="FlowState — ActivityMonitorController.java"/>
+                    <Label fx:id="lblActiveProcessName" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;" text="code.exe"/>
+                    <Label fx:id="lblActiveWindowTitle" style="-fx-font-size: 13px; -fx-text-fill: #9CA3AF;" text="FlowState — Visual Studio Code"/>
                 </VBox>
                 <VBox alignment="CENTER_RIGHT" spacing="2.0">
-                    <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="CURRENT INTERVAL"/>
-                    <Label fx:id="lblActiveDuration" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #F8FAFC; -fx-font-family: monospace;" text="02m 14s"/>
+                    <Label styleClass="card-subtext" text="CURRENT DURATION"/>
+                    <Label fx:id="lblActiveDuration" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #A78BFA; -fx-font-family: monospace;" text="04m 12s"/>
                 </VBox>
             </HBox>
 
             <!-- Quick Classification Actions -->
-            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-padding: 8px 0 0 0;">
-                <Label style="-fx-font-size: 12px; -fx-text-fill: #94A3B8;" text="Quick Classify:"/>
-                <Button onAction="#handleMarkProductive" styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 4px 10px;" text="🟢 Productive"/>
-                <Button onAction="#handleMarkNeutral" styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 4px 10px;" text="⚪ Neutral"/>
-                <Button onAction="#handleMarkDistracting" styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 4px 10px;" text="🔴 Distracting"/>
+            <HBox alignment="CENTER_LEFT" spacing="8.0" style="-fx-padding: 8px 0 0 0; -fx-border-color: #1F212B; -fx-border-width: 1px 0 0 0;">
+                <Label style="-fx-font-size: 12px; -fx-text-fill: #6B7280;" text="Quick Classify:"/>
+                <Button onAction="#handleMarkProductive" styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 5px 12px;" text="🟢 Productive"/>
+                <Button onAction="#handleMarkNeutral" styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 5px 12px;" text="⚪ Neutral"/>
+                <Button onAction="#handleMarkDistracting" styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 5px 12px;" text="🔴 Distracting"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button onAction="#handleExcludeApp" styleClass="btn-danger" style="-fx-font-size: 11px; -fx-padding: 4px 10px;" text="🚫 Exclude from Tracking"/>
+                <Button onAction="#handleExcludeApp" styleClass="btn-danger" style="-fx-font-size: 11px; -fx-padding: 5px 12px;" text="🚫 Exclude App"/>
             </HBox>
         </VBox>
 
-        <!-- Activity History Stream Table -->
+        <!-- Activity Stream Table (RIZE Apps List Style) -->
         <VBox spacing="12.0" styleClass="card">
             <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label styleClass="card-title" text="RECENT ACTIVITY INTERVALS"/>
+                <VBox spacing="2.0">
+                    <Label styleClass="card-title" text="RECENT APPS &amp; ACTIVITIES"/>
+                    <Label styleClass="card-subtext" text="Logged foreground window transitions"/>
+                </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="txtSearchActivity" prefWidth="240.0" promptText="Filter by app name..."/>
+                <TextField fx:id="txtSearchActivity" prefWidth="240.0" promptText="Filter by application name..."/>
             </HBox>
 
             <TableView fx:id="tableActivities" prefHeight="380.0">
                 <columns>
-                    <TableColumn fx:id="colApp" prefWidth="180.0" text="Application"/>
-                    <TableColumn fx:id="colTitle" prefWidth="320.0" text="Window Title"/>
-                    <TableColumn fx:id="colStartedAt" prefWidth="140.0" text="Started At"/>
+                    <TableColumn fx:id="colApp" prefWidth="180.0" text="Process / App"/>
+                    <TableColumn fx:id="colTitle" prefWidth="340.0" text="Window Title"/>
+                    <TableColumn fx:id="colStartedAt" prefWidth="120.0" text="Started At"/>
                     <TableColumn fx:id="colDuration" prefWidth="110.0" text="Duration"/>
                     <TableColumn fx:id="colCategory" prefWidth="110.0" text="Category"/>
                 </columns>

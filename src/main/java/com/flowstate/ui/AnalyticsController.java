@@ -24,17 +24,17 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Controller for the Productivity Analytics screen.
+ * Controller for the Deep Focus inspired Productivity Analytics screen.
  */
 public class AnalyticsController implements Refreshable {
     private static final Logger logger = LoggerFactory.getLogger(AnalyticsController.class);
 
     @FXML private ComboBox<String> cbTimeframe;
 
-    @FXML private Label lblTotalFocusTime;
     @FXML private Label lblCompletedCount;
-    @FXML private Label lblInterruptionCount;
-    @FXML private Label lblAvgFocusRatio;
+    @FXML private Label lblTotalFocusTime;
+    @FXML private Label lblLongestSession;
+    @FXML private Label lblAvgSession;
 
     @FXML private BarChart<String, Number> chartDurationTrend;
     @FXML private CategoryAxis axisTrendDates;
@@ -113,27 +113,29 @@ public class AnalyticsController implements Refreshable {
             List<FocusSession> sessions = sessionRepository.findByDateRange(start, end);
             List<ApplicationActivity> activities = activityRepository.findByDateRange(start, end);
 
-            // Compute aggregations
+            // 1. Compute Deep Focus 4 metrics
             long totalFocusSec = 0;
-            int completedCount = 0;
-            int totalInterruptions = 0;
+            long maxSessionSec = 0;
+            int sessionCount = sessions.size();
+
             Map<SessionCategory, Integer> categoryInterruptions = new EnumMap<>(SessionCategory.class);
             for (SessionCategory cat : SessionCategory.values()) {
                 categoryInterruptions.put(cat, 0);
             }
 
             for (FocusSession s : sessions) {
-                if (s.getStatus().isCompleted()) {
-                    completedCount++;
+                long dur = s.getActualDurationSeconds();
+                totalFocusSec += dur;
+                if (dur > maxSessionSec) {
+                    maxSessionSec = dur;
                 }
-                totalFocusSec += s.getActualDurationSeconds();
-                totalInterruptions += s.getInterruptionCount();
-
                 int currentCount = categoryInterruptions.getOrDefault(s.getCategory(), 0);
                 categoryInterruptions.put(s.getCategory(), currentCount + s.getInterruptionCount());
             }
 
-            // Application distribution
+            long avgSessionSec = sessionCount > 0 ? (totalFocusSec / sessionCount) : 0;
+
+            // 2. Application distribution (RIZE categories)
             long productiveSec = 0;
             long neutralSec = 0;
             long distractingSec = 0;
@@ -145,12 +147,9 @@ public class AnalyticsController implements Refreshable {
                 else neutralSec += d;
             }
 
-            long totalAppSec = productiveSec + neutralSec + distractingSec;
-            double focusRatio = totalAppSec > 0 ? (productiveSec * 100.0) / totalAppSec : 0.0;
-
-            // Trend Series
+            // 3. Daily Trend Series
             XYChart.Series<String, Number> trendSeries = new XYChart.Series<>();
-            trendSeries.setName("Focus Minutes");
+            trendSeries.setName("Focus Time");
 
             for (int i = daysBack - 1; i >= 0; i--) {
                 LocalDate d = today.minusDays(i);
@@ -169,7 +168,7 @@ public class AnalyticsController implements Refreshable {
                 trendSeries.getData().add(new XYChart.Data<>(label, daySec / 60));
             }
 
-            // Interruption Series
+            // 4. Interruption Series
             XYChart.Series<String, Number> interSeries = new XYChart.Series<>();
             interSeries.setName("Interruptions");
             for (Map.Entry<SessionCategory, Integer> entry : categoryInterruptions.entrySet()) {
@@ -177,18 +176,19 @@ public class AnalyticsController implements Refreshable {
             }
 
             final long finalTotalFocus = totalFocusSec;
-            final int finalCompleted = completedCount;
-            final int finalInterruptions = totalInterruptions;
-            final double finalRatio = focusRatio;
+            final long finalMax = maxSessionSec;
+            final long finalAvg = avgSessionSec;
+            final int finalCount = sessionCount;
             final long finalProd = productiveSec;
             final long finalNeut = neutralSec;
             final long finalDist = distractingSec;
 
             Platform.runLater(() -> {
-                lblTotalFocusTime.setText(formatSeconds(finalTotalFocus));
-                lblCompletedCount.setText(String.valueOf(finalCompleted));
-                lblInterruptionCount.setText(String.valueOf(finalInterruptions));
-                lblAvgFocusRatio.setText(String.format("%.1f%%", finalRatio));
+                // Image 1 cards exact format
+                lblCompletedCount.setText(finalCount + (finalCount == 1 ? " session" : " sessions"));
+                lblTotalFocusTime.setText(formatHoursMinutes(finalTotalFocus));
+                lblLongestSession.setText(formatHoursMinutes(finalMax));
+                lblAvgSession.setText(formatHoursMinutes(finalAvg));
 
                 // Update Trend Chart
                 chartDurationTrend.getData().clear();
@@ -196,7 +196,7 @@ public class AnalyticsController implements Refreshable {
 
                 // Update Pie Chart
                 chartCategoryDistribution.getData().clear();
-                if (finalProd > 0) chartCategoryDistribution.getData().add(new PieChart.Data("Productive", finalProd / 60));
+                if (finalProd > 0) chartCategoryDistribution.getData().add(new PieChart.Data("Code & Productive", finalProd / 60));
                 if (finalNeut > 0) chartCategoryDistribution.getData().add(new PieChart.Data("Neutral", finalNeut / 60));
                 if (finalDist > 0) chartCategoryDistribution.getData().add(new PieChart.Data("Distracting", finalDist / 60));
                 if (chartCategoryDistribution.getData().isEmpty()) {
@@ -213,13 +213,10 @@ public class AnalyticsController implements Refreshable {
         }
     }
 
-    private String formatSeconds(long totalSeconds) {
-        if (totalSeconds <= 0) return "0m";
+    private String formatHoursMinutes(long totalSeconds) {
+        if (totalSeconds <= 0) return "0h 0m";
         long hours = totalSeconds / 3600;
         long minutes = (totalSeconds % 3600) / 60;
-        if (hours > 0) {
-            return String.format("%dh %dm", hours, minutes);
-        }
-        return String.format("%dm", minutes);
+        return String.format("%dh %dm", hours, minutes);
     }
 }
