@@ -35,4 +35,8 @@ public enum SessionStatus {
     public boolean isActive() {
         return this == RUNNING || this == PAUSED;
     }
+
+    public boolean isCompleted() {
+        return this == COMPLETED;
+    }
 }

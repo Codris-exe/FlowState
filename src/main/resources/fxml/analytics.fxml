@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;"
+            stylesheets="@../css/flowstate-theme.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.flowstate.ui.AnalyticsController">
+
+    <VBox spacing="24.0" styleClass="content-area">
+        <padding>
+            <Insets bottom="32.0" left="28.0" right="28.0" top="16.0"/>
+        </padding>
+
+        <!-- Header and Date Range Picker -->
+        <HBox alignment="CENTER_LEFT" spacing="16.0">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="view-title" text="Productivity Analytics"/>
+                <Label styleClass="view-subtitle" text="Deep-work patterns, application breakdown, and interruption trends."/>
+            </VBox>
+            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 13px;" text="Timeframe:"/>
+                <ComboBox fx:id="cbTimeframe" onAction="#handleTimeframeChange" prefWidth="160.0"/>
+            </HBox>
+        </HBox>
+
+        <!-- 4 Stat Summary Cards -->
+        <GridPane hgap="16.0" vgap="16.0">
+            <VBox spacing="6.0" styleClass="card" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS">
+                <Label styleClass="card-title" text="TOTAL FOCUS TIME"/>
+                <Label fx:id="lblTotalFocusTime" styleClass="card-value" text="0m"/>
+                <Label styleClass="card-subtext" text="In selected timeframe"/>
+            </VBox>
+
+            <VBox spacing="6.0" styleClass="card" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+                <Label styleClass="card-title" text="COMPLETED SESSIONS"/>
+                <Label fx:id="lblCompletedCount" styleClass="card-value" text="0"/>
+                <Label styleClass="card-subtext" text="Goal-oriented sessions"/>
+            </VBox>
+
+            <VBox spacing="6.0" styleClass="card" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS">
+                <Label styleClass="card-title" text="TOTAL INTERRUPTIONS"/>
+                <Label fx:id="lblInterruptionCount" styleClass="card-value" style="-fx-text-fill: #EF4444;" text="0"/>
+                <Label styleClass="card-subtext" text="Switches to distracting apps"/>
+            </VBox>
+
+            <VBox spacing="6.0" styleClass="card" GridPane.columnIndex="3" GridPane.hgrow="ALWAYS">
+                <Label styleClass="card-title" text="AVG FOCUS RATIO"/>
+                <Label fx:id="lblAvgFocusRatio" styleClass="card-value" style="-fx-text-fill: #10B981;" text="0%"/>
+                <Label styleClass="card-subtext" text="Productive app focus ratio"/>
+            </VBox>
+        </GridPane>
+
+        <!-- Charts Row 1: Duration Trend and Distribution -->
+        <HBox spacing="16.0">
+            <!-- Focus Trend Bar Chart -->
+            <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="540.0">
+                <Label styleClass="card-title" text="DAILY FOCUS DURATION TREND"/>
+                <BarChart fx:id="chartDurationTrend" animated="false" legendVisible="false" prefHeight="260.0">
+                    <xAxis>
+                        <CategoryAxis fx:id="axisTrendDates" side="BOTTOM"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis fx:id="axisTrendMinutes" label="Minutes" side="LEFT"/>
+                    </yAxis>
+                </BarChart>
+            </VBox>
+
+            <!-- Usage Distribution Pie Chart -->
+            <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="420.0">
+                <Label styleClass="card-title" text="APPLICATION CATEGORY DISTRIBUTION"/>
+                <PieChart fx:id="chartCategoryDistribution" animated="false" legendVisible="true" prefHeight="260.0"/>
+            </VBox>
+        </HBox>
+
+        <!-- Charts Row 2: Interruptions by Category -->
+        <VBox spacing="12.0" styleClass="card">
+            <Label styleClass="card-title" text="INTERRUPTIONS BY SESSION CATEGORY"/>
+            <BarChart fx:id="chartCategoryInterruptions" animated="false" legendVisible="false" prefHeight="220.0">
+                <xAxis>
+                    <CategoryAxis fx:id="axisCategories" side="BOTTOM"/>
+                </xAxis>
+                <yAxis>
+                    <NumberAxis fx:id="axisInterruptionCount" label="Interruptions" side="LEFT"/>
+                </yAxis>
+            </BarChart>
+        </VBox>
+
+    </VBox>
+</ScrollPane>
