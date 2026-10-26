@@ -1,7 +1,6 @@
 package com.flowstate;
 
 import com.flowstate.analytics.DistractionAnalyzer;
-import com.flowstate.service.FocusSessionService;
 import com.flowstate.service.LifecycleManager;
 import com.flowstate.storage.FileStorageManager;
 import com.flowstate.storage.RepositoryFactory;
@@ -32,10 +31,7 @@ public class FlowStateApp extends Application {
         // 1. Initialize Local File Storage Directory
         FileStorageManager.getInstance().initialize();
 
-        // 2. Wire Domain Services with File-based Repositories
-        FocusSessionService sessionService = FocusSessionService.getInstance();
-        sessionService.setRepository(RepositoryFactory.getFocusSessionRepository());
-
+        // 2. Wire Tracking Service with Distraction Analyzer and Activity Repository
         DistractionAnalyzer distractionAnalyzer = new DistractionAnalyzer(RepositoryFactory.getApplicationPreferenceRepository());
 
         ActivityTrackingService trackingService = ActivityTrackingService.getInstance();

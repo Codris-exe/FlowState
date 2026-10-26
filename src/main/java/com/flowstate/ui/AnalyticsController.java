@@ -2,10 +2,8 @@ package com.flowstate.ui;
 
 import com.flowstate.model.AppCategory;
 import com.flowstate.model.ApplicationActivity;
-import com.flowstate.model.FocusSession;
-import com.flowstate.model.SessionCategory;
 import com.flowstate.repository.ActivityRepository;
-import com.flowstate.repository.FocusSessionRepository;
+import com.flowstate.storage.RepositoryFactory;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -46,16 +44,13 @@ public class AnalyticsController implements Refreshable {
     @FXML private CategoryAxis axisCategories;
     @FXML private NumberAxis axisInterruptionCount;
 
-    private final FocusSessionRepository sessionRepository;
     private final ActivityRepository activityRepository;
 
     public AnalyticsController() {
-        this(com.flowstate.storage.RepositoryFactory.getFocusSessionRepository(),
-             com.flowstate.storage.RepositoryFactory.getActivityRepository());
+        this(RepositoryFactory.getActivityRepository());
     }
 
-    public AnalyticsController(FocusSessionRepository sessionRepository, ActivityRepository activityRepository) {
-        this.sessionRepository = sessionRepository;
+    public AnalyticsController(ActivityRepository activityRepository) {
         this.activityRepository = activityRepository;
     }
 
@@ -110,85 +105,69 @@ public class AnalyticsController implements Refreshable {
                 }
             }
 
-            List<FocusSession> sessions = sessionRepository.findByDateRange(start, end);
             List<ApplicationActivity> activities = activityRepository.findByDateRange(start, end);
 
-            // 1. Compute Deep Focus 4 metrics
-            long totalFocusSec = 0;
-            long maxSessionSec = 0;
-            int sessionCount = sessions.size();
-
-            Map<SessionCategory, Integer> categoryInterruptions = new EnumMap<>(SessionCategory.class);
-            for (SessionCategory cat : SessionCategory.values()) {
-                categoryInterruptions.put(cat, 0);
-            }
-
-            for (FocusSession s : sessions) {
-                long dur = s.getActualDurationSeconds();
-                totalFocusSec += dur;
-                if (dur > maxSessionSec) {
-                    maxSessionSec = dur;
-                }
-                int currentCount = categoryInterruptions.getOrDefault(s.getCategory(), 0);
-                categoryInterruptions.put(s.getCategory(), currentCount + s.getInterruptionCount());
-            }
-
-            long avgSessionSec = sessionCount > 0 ? (totalFocusSec / sessionCount) : 0;
-
-            // 2. Application distribution (RIZE categories)
             long productiveSec = 0;
             long neutralSec = 0;
             long distractingSec = 0;
+            long longestIntervalSec = 0;
 
             for (ApplicationActivity a : activities) {
                 long d = a.getDurationSeconds();
                 if (a.getActivityCategory() == AppCategory.PRODUCTIVE) productiveSec += d;
                 else if (a.getActivityCategory() == AppCategory.DISTRACTING) distractingSec += d;
                 else neutralSec += d;
+
+                if (d > longestIntervalSec) {
+                    longestIntervalSec = d;
+                }
             }
 
-            // 3. Daily Trend Series
+            long totalSec = productiveSec + neutralSec + distractingSec;
+            double focusRatio = totalSec > 0 ? (productiveSec * 100.0) / totalSec : 0.0;
+            int totalActivitiesCount = activities.size();
+
+            // Daily Trend Series
             XYChart.Series<String, Number> trendSeries = new XYChart.Series<>();
-            trendSeries.setName("Focus Time");
+            trendSeries.setName("Tracked Minutes");
 
             for (int i = daysBack - 1; i >= 0; i--) {
                 LocalDate d = today.minusDays(i);
-                long daySec = 0;
-                for (FocusSession s : sessions) {
-                    if (s.getStartTime() != null) {
-                        LocalDate sDate = s.getStartTime().atZone(ZoneId.systemDefault()).toLocalDate();
-                        if (sDate.equals(d)) {
-                            daySec += s.getActualDurationSeconds();
-                        }
-                    }
-                }
+                Instant dStart = d.atStartOfDay(ZoneId.systemDefault()).toInstant();
+                Instant dEnd = d.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+                long daySec = activities.stream()
+                        .filter(a -> a.getStartedAt() != null && !a.getStartedAt().isBefore(dStart) && a.getStartedAt().isBefore(dEnd))
+                        .mapToLong(ApplicationActivity::getDurationSeconds)
+                        .sum();
+
                 String label = daysBack <= 7
                         ? d.format(DateTimeFormatter.ofPattern("EEE"))
                         : d.format(DateTimeFormatter.ofPattern("MM/dd"));
                 trendSeries.getData().add(new XYChart.Data<>(label, daySec / 60));
             }
 
-            // 4. Interruption Series
-            XYChart.Series<String, Number> interSeries = new XYChart.Series<>();
-            interSeries.setName("Interruptions");
-            for (Map.Entry<SessionCategory, Integer> entry : categoryInterruptions.entrySet()) {
-                interSeries.getData().add(new XYChart.Data<>(entry.getKey().name(), entry.getValue()));
-            }
+            // Top categories series
+            XYChart.Series<String, Number> catSeries = new XYChart.Series<>();
+            catSeries.setName("Minutes");
+            catSeries.getData().add(new XYChart.Data<>("Productive", productiveSec / 60));
+            catSeries.getData().add(new XYChart.Data<>("Neutral", neutralSec / 60));
+            catSeries.getData().add(new XYChart.Data<>("Distracting", distractingSec / 60));
 
-            final long finalTotalFocus = totalFocusSec;
-            final long finalMax = maxSessionSec;
-            final long finalAvg = avgSessionSec;
-            final int finalCount = sessionCount;
+            final long finalTotal = totalSec;
             final long finalProd = productiveSec;
-            final long finalNeut = neutralSec;
             final long finalDist = distractingSec;
+            final long finalLongest = longestIntervalSec;
+            final double finalRatio = focusRatio;
+            final int finalCount = totalActivitiesCount;
+            final long finalNeut = neutralSec;
 
             Platform.runLater(() -> {
                 // Image 1 cards exact format
-                lblCompletedCount.setText(finalCount + (finalCount == 1 ? " session" : " sessions"));
-                lblTotalFocusTime.setText(formatHoursMinutes(finalTotalFocus));
-                lblLongestSession.setText(formatHoursMinutes(finalMax));
-                lblAvgSession.setText(formatHoursMinutes(finalAvg));
+                lblCompletedCount.setText(finalCount + " logs");
+                lblTotalFocusTime.setText(formatHoursMinutes(finalTotal));
+                lblLongestSession.setText(formatHoursMinutes(finalProd));
+                lblAvgSession.setText(String.format("%.1f%%", finalRatio));
 
                 // Update Trend Chart
                 chartDurationTrend.getData().clear();
@@ -196,16 +175,16 @@ public class AnalyticsController implements Refreshable {
 
                 // Update Pie Chart
                 chartCategoryDistribution.getData().clear();
-                if (finalProd > 0) chartCategoryDistribution.getData().add(new PieChart.Data("Code & Productive", finalProd / 60));
+                if (finalProd > 0) chartCategoryDistribution.getData().add(new PieChart.Data("Productive", finalProd / 60));
                 if (finalNeut > 0) chartCategoryDistribution.getData().add(new PieChart.Data("Neutral", finalNeut / 60));
                 if (finalDist > 0) chartCategoryDistribution.getData().add(new PieChart.Data("Distracting", finalDist / 60));
                 if (chartCategoryDistribution.getData().isEmpty()) {
                     chartCategoryDistribution.getData().add(new PieChart.Data("No Activity Logged", 1));
                 }
 
-                // Update Category Interruptions Chart
+                // Update Category Chart
                 chartCategoryInterruptions.getData().clear();
-                chartCategoryInterruptions.getData().add(interSeries);
+                chartCategoryInterruptions.getData().add(catSeries);
             });
 
         } catch (Exception e) {

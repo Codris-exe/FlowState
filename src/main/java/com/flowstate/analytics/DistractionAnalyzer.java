@@ -1,7 +1,6 @@
 package com.flowstate.analytics;
 
 import com.flowstate.model.AppCategory;
-import com.flowstate.model.ApplicationActivity;
 import com.flowstate.model.ApplicationPreference;
 import com.flowstate.repository.ApplicationPreferenceRepository;
 import org.slf4j.Logger;
@@ -9,17 +8,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Transparent, rule-based distraction analyzer (no black-box machine learning).
  *
  * Implements strict, explainable classification rules:
- * - DIST-02: Only switches from PRODUCTIVE to DISTRACTING are counted as interruptions.
- * - DIST-03: Neutral switches (e.g. IDE to documentation or terminal) are NOT interruptions.
- * - DIST-04: Computes focus percentage: (productiveSeconds / totalSeconds) * 100.
- * - DIST-05: Computes longest uninterrupted deep-work streak.
+ * - Only switches from PRODUCTIVE to DISTRACTING are counted as distractions.
+ * - Neutral switches (e.g. IDE to documentation or terminal) are NOT distractions.
  */
 public class DistractionAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(DistractionAnalyzer.class);
@@ -88,85 +84,13 @@ public class DistractionAnalyzer {
 
     /**
      * Determines whether a transition from previousCategory to currentCategory
-     * constitutes an interruption.
-     *
-     * Rule: An interruption occurs ONLY when switching from a PRODUCTIVE application
-     * into a DISTRACTING application. Neutral switches (e.g., checking docs or terminal)
-     * are NOT interruptions.
+     * constitutes an interruption/distraction.
      */
     public boolean isDistraction(AppCategory previousCategory, AppCategory currentCategory) {
         if (previousCategory == null || currentCategory == null) {
             return false;
         }
         return previousCategory == AppCategory.PRODUCTIVE && currentCategory == AppCategory.DISTRACTING;
-    }
-
-    /**
-     * Computes comprehensive distraction and focus metrics for a completed session.
-     */
-    public SessionDistractionMetrics analyzeSession(Long sessionId, List<ApplicationActivity> activities, long actualSessionDurationSeconds) {
-        if (activities == null || activities.isEmpty()) {
-            return new SessionDistractionMetrics(sessionId, actualSessionDurationSeconds, 0, 0, 0, 0.0, 0, 0, 0);
-        }
-
-        long productiveSec = 0;
-        long distractingSec = 0;
-        long neutralSec = 0;
-        int switches = Math.max(0, activities.size() - 1);
-        int interruptions = 0;
-
-        long currentStreak = 0;
-        long maxStreak = 0;
-
-        AppCategory previousCategory = null;
-
-        for (ApplicationActivity act : activities) {
-            long duration = act.getDurationSeconds();
-            AppCategory cat = act.getActivityCategory() != null ? act.getActivityCategory() : AppCategory.NEUTRAL;
-
-            if (isDistraction(previousCategory, cat)) {
-                interruptions++;
-            }
-
-            switch (cat) {
-                case PRODUCTIVE -> {
-                    productiveSec += duration;
-                    currentStreak += duration;
-                }
-                case NEUTRAL -> {
-                    neutralSec += duration;
-                    // Neutral switches (e.g. reference docs) sustain deep work streak without resetting
-                    currentStreak += duration;
-                }
-                case DISTRACTING -> {
-                    distractingSec += duration;
-                    maxStreak = Math.max(maxStreak, currentStreak);
-                    currentStreak = 0;
-                }
-            }
-            previousCategory = cat;
-        }
-        maxStreak = Math.max(maxStreak, currentStreak);
-
-        long totalTracked = productiveSec + distractingSec + neutralSec;
-        long effectiveTotal = actualSessionDurationSeconds > 0 ? actualSessionDurationSeconds : totalTracked;
-
-        double focusPercentage = 0.0;
-        if (effectiveTotal > 0) {
-            focusPercentage = Math.min(100.0, (productiveSec * 100.0) / effectiveTotal);
-        }
-
-        return new SessionDistractionMetrics(
-                sessionId,
-                effectiveTotal,
-                productiveSec,
-                distractingSec,
-                neutralSec,
-                focusPercentage,
-                interruptions,
-                switches,
-                maxStreak
-        );
     }
 
     public void setPreference(String identifier, String displayName, AppCategory category, boolean isExcluded) {

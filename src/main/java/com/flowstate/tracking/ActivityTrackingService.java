@@ -1,15 +1,14 @@
 package com.flowstate.tracking;
 
+import com.flowstate.analytics.DistractionAnalyzer;
 import com.flowstate.model.AppCategory;
 import com.flowstate.model.ApplicationActivity;
 import com.flowstate.repository.ActivityRepository;
-import com.flowstate.service.FocusSessionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,7 +17,7 @@ import java.util.function.Function;
 
 /**
  * Background service that periodically samples the active foreground application window,
- * maintains interval durations, links activities to active focus sessions, and persists
+ * maintains interval durations, detects category transitions, and persists
  * them using ActivityRepository.
  */
 public class ActivityTrackingService {
@@ -27,7 +26,6 @@ public class ActivityTrackingService {
 
     private final ActivityTrackingProvider trackingProvider;
     private final ActivityRepository activityRepository;
-    private final FocusSessionService sessionService;
     private final ScheduledExecutorService scheduler;
     private final boolean ownsScheduler;
 
@@ -35,16 +33,15 @@ public class ActivityTrackingService {
     private final AtomicReference<ApplicationActivity> currentActivity = new AtomicReference<>(null);
     private final List<ActivityChangeListener> listeners = new CopyOnWriteArrayList<>();
 
-    // Optional category and exclusion resolver: maps app identifier to AppCategory
     private Function<String, AppCategory> categoryResolver = app -> AppCategory.NEUTRAL;
     private Function<String, Boolean> exclusionPredicate = app -> false;
-    private com.flowstate.analytics.DistractionAnalyzer distractionAnalyzer;
+    private DistractionAnalyzer distractionAnalyzer;
 
     private ScheduledFuture<?> pollingFuture;
     private final long pollIntervalMs;
 
     public ActivityTrackingService() {
-        this(new WindowsNativeTrackingProvider(), null, FocusSessionService.getInstance(),
+        this(new WindowsNativeTrackingProvider(), null,
                 Executors.newSingleThreadScheduledExecutor(r -> {
                     Thread t = new Thread(r, "FlowState-ActivityTracker");
                     t.setDaemon(true);
@@ -54,16 +51,14 @@ public class ActivityTrackingService {
 
     public ActivityTrackingService(ActivityTrackingProvider trackingProvider,
                                    ActivityRepository activityRepository,
-                                   FocusSessionService sessionService,
                                    ScheduledExecutorService scheduler,
                                    boolean ownsScheduler,
                                    long pollIntervalMs) {
-        this.trackingProvider = Objects.requireNonNull(trackingProvider, "trackingProvider must not be null");
+        this.trackingProvider = trackingProvider != null ? trackingProvider : new WindowsNativeTrackingProvider();
         this.activityRepository = activityRepository;
-        this.sessionService = sessionService != null ? sessionService : FocusSessionService.getInstance();
-        this.scheduler = Objects.requireNonNull(scheduler, "scheduler must not be null");
+        this.scheduler = scheduler;
         this.ownsScheduler = ownsScheduler;
-        this.pollIntervalMs = Math.max(500, pollIntervalMs);
+        this.pollIntervalMs = pollIntervalMs;
     }
 
     public static ActivityTrackingService getInstance() {
@@ -72,10 +67,16 @@ public class ActivityTrackingService {
 
     public synchronized void start() {
         if (pollingFuture != null && !pollingFuture.isCancelled()) {
+            logger.warn("ActivityTrackingService is already running.");
             return;
         }
 
-        logger.info("Starting background activity tracking polling at interval {}ms", pollIntervalMs);
+        if (!trackingProvider.isSupported()) {
+            logger.warn("Native tracking provider is not supported on this platform. Polling disabled.");
+            return;
+        }
+
+        logger.info("Starting ActivityTrackingService with poll interval {}ms", pollIntervalMs);
         pollingFuture = scheduler.scheduleWithFixedDelay(
                 this::pollForegroundApp,
                 0,
@@ -87,7 +88,6 @@ public class ActivityTrackingService {
     public synchronized void pauseTracking() {
         if (trackingEnabled.compareAndSet(true, false)) {
             logger.info("Activity tracking paused by user");
-            // Finalize current activity interval if active
             finalizeCurrentActivity(Instant.now());
             notifyTrackingStateChanged(false);
         }
@@ -120,7 +120,7 @@ public class ActivityTrackingService {
         }
     }
 
-    public void setDistractionAnalyzer(com.flowstate.analytics.DistractionAnalyzer analyzer) {
+    public void setDistractionAnalyzer(DistractionAnalyzer analyzer) {
         this.distractionAnalyzer = analyzer;
         if (analyzer != null) {
             this.categoryResolver = analyzer::resolveCategory;
@@ -128,7 +128,7 @@ public class ActivityTrackingService {
         }
     }
 
-    public com.flowstate.analytics.DistractionAnalyzer getDistractionAnalyzer() {
+    public DistractionAnalyzer getDistractionAnalyzer() {
         return distractionAnalyzer;
     }
 
@@ -142,9 +142,6 @@ public class ActivityTrackingService {
         listeners.remove(listener);
     }
 
-    /**
-     * Core polling logic executed on scheduler thread.
-     */
     public void pollForegroundApp() {
         if (!trackingEnabled.get()) {
             return;
@@ -158,58 +155,38 @@ public class ActivityTrackingService {
 
             ForegroundAppInfo sample = sampleOpt.get();
             String processName = sample.processName();
+            Instant now = sample.timestamp() != null ? sample.timestamp() : Instant.now();
 
-            // Check if application is excluded from tracking
             if (exclusionPredicate.apply(processName)) {
-                finalizeCurrentActivity(Instant.now());
+                finalizeCurrentActivity(now);
                 return;
             }
 
-            Instant now = sample.timestamp();
             ApplicationActivity current = currentActivity.get();
 
-            Long activeSessionId = null;
-            if (sessionService != null && sessionService.hasActiveSession()) {
-                activeSessionId = sessionService.getActiveSession().getId();
-            }
-
             if (current == null) {
-                // First sampled activity
                 AppCategory category = categoryResolver.apply(processName);
                 ApplicationActivity newActivity = new ApplicationActivity(
-                        processName, sample.windowTitle(), now, activeSessionId, category
+                        processName, sample.windowTitle(), now, null, category
                 );
                 currentActivity.set(newActivity);
                 notifyActivityChanged(newActivity, null);
                 return;
             }
 
-            // Check if active application or window changed
             boolean sameApp = processName.equalsIgnoreCase(current.getApplicationName());
             boolean sameWindow = sample.windowTitle().equals(current.getWindowTitle());
-            boolean sameSession = Objects.equals(activeSessionId, current.getSessionId());
 
-            if (sameApp && sameWindow && sameSession) {
-                // Same active window: update elapsed duration
+            if (sameApp && sameWindow) {
                 current.close(now);
             } else {
-                // Application switch detected
                 finalizeCurrentActivity(now);
 
                 AppCategory category = categoryResolver.apply(processName);
                 ApplicationActivity newActivity = new ApplicationActivity(
-                        processName, sample.windowTitle(), now, activeSessionId, category
+                        processName, sample.windowTitle(), now, null, category
                 );
                 currentActivity.set(newActivity);
-
-                // Interruption heuristic check during active focus session
-                if (sessionService != null && sessionService.hasActiveSession() && distractionAnalyzer != null) {
-                    AppCategory prevCategory = current.getActivityCategory();
-                    if (distractionAnalyzer.isDistraction(prevCategory, category)) {
-                        sessionService.recordInterruption();
-                    }
-                }
-
                 notifyActivityChanged(newActivity, current);
             }
         } catch (Exception e) {
@@ -221,12 +198,11 @@ public class ActivityTrackingService {
         ApplicationActivity prev = currentActivity.getAndSet(null);
         if (prev != null) {
             prev.close(now);
-            // Only persist activities that lasted at least 1 second
             if (prev.getDurationSeconds() >= 1 && activityRepository != null) {
                 try {
                     activityRepository.save(prev);
                 } catch (Exception e) {
-                    logger.warn("Failed to persist application activity to database: {}", e.getMessage());
+                    logger.warn("Failed to persist application activity: {}", e.getMessage());
                 }
             }
         }

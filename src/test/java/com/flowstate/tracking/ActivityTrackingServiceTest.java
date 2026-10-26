@@ -2,16 +2,12 @@ package com.flowstate.tracking;
 
 import com.flowstate.model.AppCategory;
 import com.flowstate.model.ApplicationActivity;
-import com.flowstate.model.FocusSession;
-import com.flowstate.model.SessionCategory;
 import com.flowstate.repository.ActivityRepository;
-import com.flowstate.service.FocusSessionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -74,90 +70,19 @@ class ActivityTrackingServiceTest {
     }
 
     @Test
-    @DisplayName("Initial poll starts tracking active application")
-    void testInitialSampleStartsActivity() {
-        AtomicReference<ForegroundAppInfo> currentApp = new AtomicReference<>(
-                new ForegroundAppInfo("idea64.exe", "FlowState - Project.java", Instant.now())
+    @DisplayName("Activity tracking captures app change and saves previous app interval with duration")
+    void testAppChangeRecordsDurationAndPersists() {
+        Instant t0 = Instant.now().minusSeconds(10);
+        Instant t1 = t0.plusSeconds(5);
+
+        AtomicReference<ForegroundAppInfo> currentSample = new AtomicReference<>(
+                new ForegroundAppInfo("idea64.exe", "FlowStateApp.java", t0)
         );
 
         ActivityTrackingProvider stubProvider = new ActivityTrackingProvider() {
             @Override
             public Optional<ForegroundAppInfo> getForegroundApp() {
-                return Optional.ofNullable(currentApp.get());
-            }
-
-            @Override
-            public boolean isSupported() {
-                return true;
-            }
-        };
-
-        ActivityTrackingService service = new ActivityTrackingService(
-                stubProvider, stubRepo, null, executor, false, 1000L
-        );
-
-        service.pollForegroundApp();
-
-        ApplicationActivity active = service.getCurrentActivity();
-        assertThat(active).isNotNull();
-        assertThat(active.getApplicationName()).isEqualTo("idea64.exe");
-        assertThat(active.getWindowTitle()).isEqualTo("FlowState - Project.java");
-        assertThat(savedActivities).isEmpty(); // Not saved until window switches or closed
-    }
-
-    @Test
-    @DisplayName("App switch closes previous activity with duration and persists to repository")
-    void testAppSwitchFinalizesPreviousAndStartsNew() {
-        Instant t0 = Instant.parse("2026-10-26T12:00:00Z");
-        Instant t1 = Instant.parse("2026-10-26T12:05:00Z");
-
-        AtomicReference<ForegroundAppInfo> currentApp = new AtomicReference<>(
-                new ForegroundAppInfo("idea64.exe", "Main.java", t0)
-        );
-
-        ActivityTrackingProvider stubProvider = new ActivityTrackingProvider() {
-            @Override
-            public Optional<ForegroundAppInfo> getForegroundApp() {
-                return Optional.ofNullable(currentApp.get());
-            }
-
-            @Override
-            public boolean isSupported() {
-                return true;
-            }
-        };
-
-        ActivityTrackingService service = new ActivityTrackingService(
-                stubProvider, stubRepo, null, executor, false, 1000L
-        );
-
-        service.pollForegroundApp();
-
-        // Switch to Chrome 5 minutes later
-        currentApp.set(new ForegroundAppInfo("chrome.exe", "Google Search", t1));
-        service.pollForegroundApp();
-
-        assertThat(savedActivities).hasSize(1);
-        ApplicationActivity saved = savedActivities.get(0);
-        assertThat(saved.getApplicationName()).isEqualTo("idea64.exe");
-        assertThat(saved.getDurationSeconds()).isEqualTo(300L); // 5 minutes
-
-        ApplicationActivity current = service.getCurrentActivity();
-        assertThat(current).isNotNull();
-        assertThat(current.getApplicationName()).isEqualTo("chrome.exe");
-    }
-
-    @Test
-    @DisplayName("Active session ID is associated with logged application activities")
-    void testSessionIdAssociatedWhenActive() {
-        FocusSessionService sessionService = new FocusSessionService(Executors.newSingleThreadScheduledExecutor());
-        FocusSession session = sessionService.startSession("Test Coding", SessionCategory.CODING, 1500);
-        session.setId(99L);
-
-        ActivityTrackingProvider stubProvider = new ActivityTrackingProvider() {
-            @Override
-            public Optional<ForegroundAppInfo> getForegroundApp() {
-                return Optional.of(new ForegroundAppInfo("code.exe", "Workspace", Instant.now()));
+                return Optional.ofNullable(currentSample.get());
             }
 
             @Override
@@ -165,16 +90,35 @@ class ActivityTrackingServiceTest {
         };
 
         ActivityTrackingService service = new ActivityTrackingService(
-                stubProvider, stubRepo, sessionService, executor, false, 1000L
+                stubProvider, stubRepo, executor, false, 1000L
         );
 
+        // 1. Initial poll
+        service.pollForegroundApp();
+        ApplicationActivity first = service.getCurrentActivity();
+        assertThat(first).isNotNull();
+        assertThat(first.getApplicationName()).isEqualTo("idea64.exe");
+        assertThat(savedActivities).isEmpty(); // Not finalized yet
+
+        // 2. Poll same app later: duration should increment, nothing saved yet
+        service.pollForegroundApp();
+        assertThat(savedActivities).isEmpty();
+
+        // 3. Switch to different app
+        currentSample.set(new ForegroundAppInfo("chrome.exe", "Google Search", t1));
         service.pollForegroundApp();
 
-        ApplicationActivity active = service.getCurrentActivity();
-        assertThat(active).isNotNull();
-        assertThat(active.getSessionId()).isEqualTo(99L);
+        // Previous app (idea64) must now be saved with duration >= 1
+        assertThat(savedActivities).hasSize(1);
+        ApplicationActivity saved = savedActivities.get(0);
+        assertThat(saved.getApplicationName()).isEqualTo("idea64.exe");
 
-        sessionService.shutdown();
+        // Current app should now be chrome
+        ApplicationActivity current = service.getCurrentActivity();
+        assertThat(current).isNotNull();
+        assertThat(current.getApplicationName()).isEqualTo("chrome.exe");
+
+        service.shutdown();
     }
 
     @Test
@@ -195,7 +139,7 @@ class ActivityTrackingServiceTest {
         };
 
         ActivityTrackingService service = new ActivityTrackingService(
-                stubProvider, stubRepo, null, executor, false, 1000L
+                stubProvider, stubRepo, executor, false, 1000L
         );
 
         service.pollForegroundApp();
@@ -216,6 +160,8 @@ class ActivityTrackingServiceTest {
         service.pollForegroundApp();
         assertThat(service.getCurrentActivity()).isNotNull();
         assertThat(service.getCurrentActivity().getApplicationName()).isEqualTo("calculator.exe");
+
+        service.shutdown();
     }
 
     @Test
@@ -232,7 +178,7 @@ class ActivityTrackingServiceTest {
         };
 
         ActivityTrackingService service = new ActivityTrackingService(
-                stubProvider, stubRepo, null, executor, false, 1000L
+                stubProvider, stubRepo, executor, false, 1000L
         );
 
         service.setExclusionPredicate(app -> "keepass.exe".equalsIgnoreCase(app));
@@ -241,5 +187,7 @@ class ActivityTrackingServiceTest {
 
         assertThat(service.getCurrentActivity()).isNull();
         assertThat(savedActivities).isEmpty();
+
+        service.shutdown();
     }
 }

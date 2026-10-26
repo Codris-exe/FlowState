@@ -15,51 +15,36 @@
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.flowstate.ui.NavigationController">
 
-    <!-- Persistent Left Sidebar (Deep Focus Style) -->
+    <!-- Persistent Left Sidebar (Deep Focus / RIZE Minimal Style) -->
     <left>
-        <VBox prefWidth="240.0" spacing="6.0" styleClass="sidebar">
+        <VBox prefWidth="240.0" spacing="8.0" styleClass="sidebar">
             <padding>
-                <Insets bottom="20.0" left="16.0" right="16.0" top="20.0"/>
+                <Insets bottom="20.0" left="16.0" right="16.0" top="24.0"/>
             </padding>
 
             <!-- Brand Header -->
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <Label style="-fx-font-size: 18px;" text="👁"/>
+                <Label style="-fx-font-size: 20px;" text="👁"/>
                 <Label styleClass="brand-title" text="Deep Focus"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label styleClass="brand-badge" text="PRO"/>
             </HBox>
 
-            <Region prefHeight="10.0"/>
-
-            <!-- + New Session Action Button -->
-            <Button fx:id="btnNewSession" maxWidth="Infinity" onAction="#handleNewSession"
-                    styleClass="btn-new-session" text="+  New Session"/>
-
-            <Region prefHeight="8.0"/>
+            <Region prefHeight="16.0"/>
 
             <!-- Sidebar Navigation Category Header -->
             <Label styleClass="sidebar-section-header" text="NAVIGATION"/>
 
-            <!-- Core Navigation Items -->
-            <VBox spacing="4.0" VBox.vgrow="ALWAYS">
+            <!-- Core 3 Navigation Items -->
+            <VBox spacing="6.0" VBox.vgrow="ALWAYS">
                 <Button fx:id="btnDashboard" maxWidth="Infinity" onAction="#handleNavDashboard"
                         styleClass="nav-button, active" text="📊  Dashboard"/>
 
-                <Button fx:id="btnFocusSessions" maxWidth="Infinity" onAction="#handleNavFocusSessions"
-                        styleClass="nav-button" text="⏱  Focus Session"/>
+                <Button fx:id="btnActivityMonitor" maxWidth="Infinity" onAction="#handleNavActivityMonitor"
+                        styleClass="nav-button" text="🌐  Activity Timeline"/>
 
                 <Button fx:id="btnAnalytics" maxWidth="Infinity" onAction="#handleNavAnalytics"
                         styleClass="nav-button" text="📈  Analytics"/>
-
-                <Button fx:id="btnActivityMonitor" maxWidth="Infinity" onAction="#handleNavActivityMonitor"
-                        styleClass="nav-button" text="🌐  Activity Monitor"/>
-
-                <Region prefHeight="12.0"/>
-                <Label styleClass="sidebar-section-header" text="PREFERENCES"/>
-
-                <Button fx:id="btnSettings" maxWidth="Infinity" onAction="#handleNavSettings"
-                        styleClass="nav-button" text="⚙  Settings"/>
             </VBox>
 
             <!-- Bottom Background Tracking Status -->

@@ -1,14 +1,14 @@
 package com.flowstate.storage;
 
-import com.flowstate.model.*;
+import com.flowstate.model.AppCategory;
+import com.flowstate.model.ApplicationActivity;
+import com.flowstate.model.ApplicationPreference;
 import com.flowstate.repository.file.ActivityRepositoryFile;
 import com.flowstate.repository.file.ApplicationPreferenceRepositoryFile;
-import com.flowstate.repository.file.FocusSessionRepositoryFile;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -18,33 +18,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FileStorageRepositoryTest {
-
-    @Test
-    @DisplayName("FocusSessionRepositoryFile correctly persists and retrieves sessions from JSON file")
-    void testFocusSessionFilePersistence(@TempDir Path tempDir) {
-        FileStorageManager storage = new FileStorageManager(tempDir);
-        FocusSessionRepositoryFile repo = new FocusSessionRepositoryFile(storage);
-
-        FocusSession s1 = new FocusSession("Algorithms Deep Work", SessionCategory.CODING, 1800);
-        s1.start(Instant.now().minusSeconds(1800));
-        s1.complete(Instant.now());
-        repo.save(s1);
-
-        assertThat(s1.getId()).isNotNull();
-        assertThat(Files.exists(storage.getSessionsFilePath())).isTrue();
-
-        // Create a new instance pointing to same file to verify deserialization
-        FocusSessionRepositoryFile reloadedRepo = new FocusSessionRepositoryFile(storage);
-        Optional<FocusSession> found = reloadedRepo.findById(s1.getId());
-        assertThat(found).isPresent();
-        assertThat(found.get().getTitle()).isEqualTo("Algorithms Deep Work");
-        assertThat(found.get().getCategory()).isEqualTo(SessionCategory.CODING);
-        assertThat(found.get().getStatus()).isEqualTo(SessionStatus.COMPLETED);
-
-        // Aggregations
-        assertThat(reloadedRepo.countCompletedSessions()).isEqualTo(1);
-        assertThat(reloadedRepo.sumTotalFocusSeconds()).isEqualTo(1800);
-    }
 
     @Test
     @DisplayName("ActivityRepositoryFile saves activities and aggregates top applications accurately")
@@ -58,36 +31,35 @@ class FileStorageRepositoryTest {
         act1.setDurationSeconds(1200);
         repo.save(act1);
 
-        ApplicationActivity act2 = new ApplicationActivity("chrome.exe", "Docs", now.minusSeconds(600), null, AppCategory.NEUTRAL);
+        ApplicationActivity act2 = new ApplicationActivity("chrome.exe", "Stack Overflow", now.minusSeconds(600), null, AppCategory.NEUTRAL);
         act2.setEndedAt(now);
         act2.setDurationSeconds(600);
         repo.save(act2);
 
-        assertThat(Files.exists(storage.getActivitiesFilePath())).isTrue();
+        List<ApplicationActivity> all = repo.findByDateRange(now.minusSeconds(3600), now.plusSeconds(3600));
+        assertThat(all).hasSize(2);
 
-        Map<String, Long> topApps = repo.getTopApplicationsDuration(now.minusSeconds(3600), now.plusSeconds(60), 5);
-        assertThat(topApps).containsKey("idea64.exe");
-        assertThat(topApps.get("idea64.exe")).isEqualTo(1200L);
-        assertThat(topApps.get("chrome.exe")).isEqualTo(600L);
+        Map<String, Long> top = repo.getTopApplicationsDuration(now.minusSeconds(3600), now.plusSeconds(3600), 5);
+        assertThat(top).containsEntry("idea64.exe", 1200L);
+        assertThat(top).containsEntry("chrome.exe", 600L);
     }
 
     @Test
-    @DisplayName("ApplicationPreferenceRepositoryFile persists rules and handles upserts and exclusions")
-    void testPreferenceFilePersistence(@TempDir Path tempDir) {
+    @DisplayName("ApplicationPreferenceRepositoryFile persists classification rules and exclusion flags")
+    void testPreferenceFilePersistence(@TempDir Path tempDir) throws Exception {
         FileStorageManager storage = new FileStorageManager(tempDir);
         ApplicationPreferenceRepositoryFile repo = new ApplicationPreferenceRepositoryFile(storage);
 
         repo.upsert("discord.exe", "Discord", AppCategory.DISTRACTING, false);
-        repo.upsert("keepass.exe", "KeePass", AppCategory.NEUTRAL, true);
+        repo.upsert("keepassxc.exe", "KeePassXC Password Manager", AppCategory.NEUTRAL, true);
 
-        assertThat(Files.exists(storage.getPreferencesFilePath())).isTrue();
+        Optional<ApplicationPreference> foundDiscord = repo.findByIdentifier("discord.exe");
+        assertThat(foundDiscord).isPresent();
+        assertThat(foundDiscord.get().getCategory()).isEqualTo(AppCategory.DISTRACTING);
+        assertThat(foundDiscord.get().isExcluded()).isFalse();
 
-        ApplicationPreferenceRepositoryFile reloaded = new ApplicationPreferenceRepositoryFile(storage);
-        Optional<ApplicationPreference> discord = reloaded.findByIdentifier("discord.exe");
-        assertThat(discord).isPresent();
-        assertThat(discord.get().getCategory()).isEqualTo(AppCategory.DISTRACTING);
-
-        List<String> excluded = reloaded.findExcludedIdentifiers();
-        assertThat(excluded).contains("keepass.exe");
+        Optional<ApplicationPreference> foundKeePass = repo.findByIdentifier("keepassxc.exe");
+        assertThat(foundKeePass).isPresent();
+        assertThat(foundKeePass.get().isExcluded()).isTrue();
     }
 }

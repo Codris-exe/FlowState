@@ -20,18 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Controller for the streamlined sidebar navigation and view swapping.
+ * Controller for the streamlined sidebar navigation between Dashboard, Activity Monitor, and Analytics.
  */
 public class NavigationController {
     private static final Logger logger = LoggerFactory.getLogger(NavigationController.class);
     private static NavigationController instance;
 
-    @FXML private Button btnNewSession;
     @FXML private Button btnDashboard;
-    @FXML private Button btnFocusSessions;
-    @FXML private Button btnAnalytics;
     @FXML private Button btnActivityMonitor;
-    @FXML private Button btnSettings;
+    @FXML private Button btnAnalytics;
 
     @FXML private StackPane contentArea;
     @FXML private Circle trackingStatusDot;
@@ -69,27 +66,9 @@ public class NavigationController {
     }
 
     @FXML
-    public void handleNewSession(ActionEvent event) {
-        setActiveButton(btnFocusSessions);
-        navigateTo("focus-timer");
-    }
-
-    @FXML
     public void handleNavDashboard(ActionEvent event) {
         setActiveButton(btnDashboard);
         navigateTo("dashboard");
-    }
-
-    @FXML
-    public void handleNavFocusSessions(ActionEvent event) {
-        setActiveButton(btnFocusSessions);
-        navigateTo("focus-timer");
-    }
-
-    @FXML
-    public void handleNavAnalytics(ActionEvent event) {
-        setActiveButton(btnAnalytics);
-        navigateTo("analytics");
     }
 
     @FXML
@@ -99,9 +78,9 @@ public class NavigationController {
     }
 
     @FXML
-    public void handleNavSettings(ActionEvent event) {
-        setActiveButton(btnSettings);
-        navigateTo("settings");
+    public void handleNavAnalytics(ActionEvent event) {
+        setActiveButton(btnAnalytics);
+        navigateTo("analytics");
     }
 
     @FXML
@@ -112,10 +91,6 @@ public class NavigationController {
         } else {
             service.resumeTracking();
         }
-    }
-
-    public void navigateToFocusTimer() {
-        handleNewSession(null);
     }
 
     private void updateTrackingUi(boolean isTracking) {

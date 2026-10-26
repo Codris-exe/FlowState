@@ -33,10 +33,6 @@ public class AppUsageSummary {
         return applicationName;
     }
 
-    public long getDurationSeconds() {
-        return durationSeconds;
-    }
-
     public String getFormattedDuration() {
         return formattedDuration;
     }

@@ -8,9 +8,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Coordinates deterministic application lifecycle shutdown and resource cleanup.
- *
- * Registers JVM shutdown hooks and handles graceful termination of background
- * scheduled executor threads and file services.
  */
 public class LifecycleManager {
     private static final Logger logger = LoggerFactory.getLogger(LifecycleManager.class);
@@ -38,7 +35,7 @@ public class LifecycleManager {
     }
 
     /**
-     * Executes clean shutdown of all background services and schedulers.
+     * Executes clean shutdown of all background tracking services and schedulers.
      */
     public synchronized void shutdownAll() {
         if (!shutdownExecuted.compareAndSet(false, true)) {
@@ -47,20 +44,12 @@ public class LifecycleManager {
 
         logger.info("Executing graceful system shutdown...");
 
-        // 1. Terminate native background activity tracking
+        // Terminate native background activity tracking
         try {
             ActivityTrackingService.getInstance().shutdown();
             logger.info("Activity tracking service stopped.");
         } catch (Exception e) {
             logger.warn("Error during activity tracking shutdown: {}", e.getMessage());
-        }
-
-        // 2. Terminate focus session timer scheduler
-        try {
-            FocusSessionService.getInstance().shutdown();
-            logger.info("Focus session timer service stopped.");
-        } catch (Exception e) {
-            logger.warn("Error during focus session shutdown: {}", e.getMessage());
         }
 
         logger.info("FlowState system shutdown completed cleanly.");

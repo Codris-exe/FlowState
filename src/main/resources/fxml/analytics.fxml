@@ -27,7 +27,7 @@
         <HBox alignment="CENTER_LEFT" spacing="16.0">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <Label styleClass="view-title" text="Analytics"/>
-                <Label styleClass="view-subtitle" text="Visualize your focus patterns and productivity trends"/>
+                <Label styleClass="view-subtitle" text="Visualize your application usage and productivity trends"/>
             </VBox>
             <HBox alignment="CENTER_RIGHT" spacing="10.0">
                 <Label style="-fx-font-size: 14px;" text="📅"/>
@@ -37,56 +37,56 @@
 
         <!-- 4 Stat Summary Cards (Image 1 Deep Focus Replica) -->
         <GridPane hgap="16.0" vgap="16.0">
-            <!-- Card 1: Total Sessions -->
+            <!-- Card 1: Total Activity Logs -->
             <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT">
-                    <Label styleClass="card-title" text="Total Sessions"/>
+                    <Label styleClass="card-title" text="Activity Logs"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label styleClass="card-icon" text="🎯"/>
                 </HBox>
-                <Label fx:id="lblCompletedCount" styleClass="card-value" text="0 sessions"/>
-                <Label styleClass="card-subtext" text="have been completed"/>
+                <Label fx:id="lblCompletedCount" styleClass="card-value" text="0 logs"/>
+                <Label styleClass="card-subtext" text="Recorded window intervals"/>
             </VBox>
 
-            <!-- Card 2: Total Focus Time -->
+            <!-- Card 2: Total Time Tracked -->
             <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT">
-                    <Label styleClass="card-title" text="Total Focus Time"/>
+                    <Label styleClass="card-title" text="Total Active Time"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label styleClass="card-icon" text="⏱"/>
                 </HBox>
                 <Label fx:id="lblTotalFocusTime" styleClass="card-value" text="0h 0m"/>
-                <Label styleClass="card-subtext" text="Across all sessions"/>
+                <Label styleClass="card-subtext" text="Across all applications"/>
             </VBox>
 
-            <!-- Card 3: Longest Session -->
+            <!-- Card 3: Productive Time -->
             <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT">
-                    <Label styleClass="card-title" text="Longest Session"/>
+                    <Label styleClass="card-title" text="Productive Time"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Label styleClass="card-icon" text="↗"/>
+                    <Label styleClass="card-icon" text="⚡"/>
                 </HBox>
-                <Label fx:id="lblLongestSession" styleClass="card-value" text="0h 0m"/>
-                <Label styleClass="card-subtext" text="Personal best session"/>
+                <Label fx:id="lblLongestSession" styleClass="card-value" style="-fx-text-fill: #10B981;" text="0h 0m"/>
+                <Label styleClass="card-subtext" text="In work &amp; study tools"/>
             </VBox>
 
-            <!-- Card 4: Avg Session -->
+            <!-- Card 4: Focus Ratio -->
             <VBox spacing="8.0" styleClass="card" GridPane.columnIndex="3" GridPane.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT">
-                    <Label styleClass="card-title" text="Avg Session"/>
+                    <Label styleClass="card-title" text="Focus Ratio"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label styleClass="card-icon" text="↗"/>
                 </HBox>
-                <Label fx:id="lblAvgSession" styleClass="card-value" text="0h 0m"/>
-                <Label styleClass="card-subtext" text="Average session time"/>
+                <Label fx:id="lblAvgSession" styleClass="card-value" style="-fx-text-fill: #A78BFA;" text="0%"/>
+                <Label styleClass="card-subtext" text="Productive percentage"/>
             </VBox>
         </GridPane>
 
-        <!-- Main Daily Focus Time Chart Card (Image 1 Style) -->
+        <!-- Main Daily Usage Time Chart Card (Image 1 Style) -->
         <VBox spacing="10.0" styleClass="card">
             <VBox spacing="2.0">
-                <Label styleClass="card-title" style="-fx-font-size: 15px; -fx-text-fill: #FFFFFF;" text="Daily Focus Time"/>
-                <Label styleClass="card-subtext" text="Focus time per day over the selected period"/>
+                <Label styleClass="card-title" style="-fx-font-size: 15px; -fx-text-fill: #FFFFFF;" text="Daily Tracked Time"/>
+                <Label styleClass="card-subtext" text="Computer usage per day over the selected period"/>
             </VBox>
             <BarChart fx:id="chartDurationTrend" animated="false" legendVisible="false" prefHeight="260.0">
                 <xAxis>
@@ -98,7 +98,7 @@
             </BarChart>
         </VBox>
 
-        <!-- Lower Split Cards: Distribution & Interruptions -->
+        <!-- Lower Split Cards: Distribution & Categories -->
         <HBox spacing="16.0">
             <!-- Usage Distribution Pie Chart -->
             <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="480.0">
@@ -106,15 +106,15 @@
                 <PieChart fx:id="chartCategoryDistribution" animated="false" legendVisible="true" prefHeight="220.0"/>
             </VBox>
 
-            <!-- Interruptions by Category -->
+            <!-- Category Duration Chart -->
             <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS" prefWidth="480.0">
-                <Label styleClass="card-title" text="INTERRUPTIONS BY CATEGORY"/>
+                <Label styleClass="card-title" text="CATEGORY TIME BREAKDOWN (MINUTES)"/>
                 <BarChart fx:id="chartCategoryInterruptions" animated="false" legendVisible="false" prefHeight="220.0">
                     <xAxis>
                         <CategoryAxis fx:id="axisCategories" side="BOTTOM"/>
                     </xAxis>
                     <yAxis>
-                        <NumberAxis fx:id="axisInterruptionCount" label="Count" side="LEFT"/>
+                        <NumberAxis fx:id="axisInterruptionCount" label="Minutes" side="LEFT"/>
                     </yAxis>
                 </BarChart>
             </VBox>

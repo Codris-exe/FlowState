@@ -1,9 +1,7 @@
 package com.flowstate.ui;
 
 import com.flowstate.model.AppCategory;
-import com.flowstate.model.FocusSession;
-import com.flowstate.model.SessionCategory;
-import com.flowstate.model.SessionStatus;
+import com.flowstate.model.ApplicationActivity;
 import com.flowstate.ui.model.AppUsageSummary;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,26 +26,21 @@ class DashboardControllerTest {
     }
 
     @Test
-    @DisplayName("FocusSession domain model properties format properly for UI presentation")
-    void testFocusSessionDisplayProperties() {
-        FocusSession session = new FocusSession(
-                55L,
-                "Deep Architecture Design",
-                SessionCategory.CODING,
-                Instant.now(),
-                Instant.now().plusSeconds(1800),
-                1800L,
-                1750L,
-                SessionStatus.COMPLETED,
-                "Architected repositories",
-                1,
-                Instant.now()
+    @DisplayName("ApplicationActivity domain model properties format properly for UI presentation")
+    void testApplicationActivityDisplayProperties() {
+        ApplicationActivity activity = new ApplicationActivity(
+                "idea64.exe",
+                "FlowState - Main.java",
+                Instant.now().minusSeconds(300),
+                null,
+                AppCategory.PRODUCTIVE
         );
+        activity.setEndedAt(Instant.now());
+        activity.setDurationSeconds(300L);
 
-        assertThat(session.getTitle()).isEqualTo("Deep Architecture Design");
-        assertThat(session.getCategory()).isEqualTo(SessionCategory.CODING);
-        assertThat(session.getActualDurationSeconds()).isEqualTo(1750L);
-        assertThat(session.getInterruptionCount()).isEqualTo(1);
-        assertThat(session.getStatus()).isEqualTo(SessionStatus.COMPLETED);
+        assertThat(activity.getApplicationName()).isEqualTo("idea64.exe");
+        assertThat(activity.getWindowTitle()).isEqualTo("FlowState - Main.java");
+        assertThat(activity.getDurationSeconds()).isEqualTo(300L);
+        assertThat(activity.getActivityCategory()).isEqualTo(AppCategory.PRODUCTIVE);
     }
 }
