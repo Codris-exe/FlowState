@@ -16,12 +16,13 @@ Here is what each file does in 1 plain English sentence:
 
 | # | File Name | What It Does |
 |---|---|---|
-| 1 | **`FlowStateApp.java`** | Main entry point (`public static void main`); starts the JavaFX desktop window and registers the shutdown hook. |
-| 2 | **`MainController.java`** | Controls the UI; manages the 3 views (**Dashboard**, **Activity Timeline**, **Analytics**), charts, and pause/resume buttons. |
-| 3 | **`ActivityTracker.java`** | Native Windows background tracker; uses **JNA** (`User32` & `Kernel32`) to sample the active window every 1.5s on a background thread. |
-| 4 | **`ActivityStorage.java`** | File persistence engine; saves and loads activities to `./data/activities.json` using **`FileInputStream`** and **`FileOutputStream`**. |
-| 5 | **`DistractionAnalyzer.java`** | Rule-based engine; classifies apps as `PRODUCTIVE` (e.g. IDEs, terminal), `DISTRACTING` (e.g. Discord, games), or `NEUTRAL` (e.g. browsers). |
-| 6 | **`Activity.java`** | The data model representing a window interval (`applicationName`, `windowTitle`, `startedAt`, `durationSeconds`, and `Category` enum). |
+| 1 | **`Main.java`** | Bootstrap launcher; invokes `FlowStateApp.main()` so the app runs smoothly with 1 click in any IDE (IntelliJ / Eclipse). |
+| 2 | **`FlowStateApp.java`** | JavaFX stage initialization; sets up window dimensions, dark CSS theme, and registers the JVM shutdown hook. |
+| 3 | **`MainController.java`** | Controls the UI; manages the 3 views (**Dashboard**, **Activity Timeline**, **Analytics**), charts, and pause/resume buttons. |
+| 4 | **`ActivityTracker.java`** | Native Windows background tracker; uses **JNA** (`User32` & `Kernel32`) to sample the active window every 1.5s on a background thread. |
+| 5 | **`ActivityStorage.java`** | File persistence engine; saves and loads activities to `./data/activities.json` using **`FileInputStream`** and **`FileOutputStream`**. |
+| 6 | **`DistractionAnalyzer.java`** | Rule-based engine; classifies apps as `PRODUCTIVE` (e.g. IDEs, terminal), `DISTRACTING` (e.g. Discord, games), or `NEUTRAL` (e.g. browsers). |
+| 7 | **`Activity.java`** | The data model representing a window interval (`applicationName`, `windowTitle`, `startedAt`, `durationSeconds`, and `Category` enum). |
 
 ---
 
@@ -65,14 +66,20 @@ Here is what each file does in 1 plain English sentence:
 ### Q8: How is application shutdown handled cleanly?
 > **Answer**: *"In `FlowStateApp.java`, we register a JVM shutdown hook using `Runtime.getRuntime().addShutdownHook()`. When the user closes the window, the hook cleanly shuts down the background tracking thread and finalizes all active intervals to disk."*
 
+### Q9: Why is there a separate `Main.java` launcher class instead of just running `FlowStateApp.java` directly?
+> **Answer**: *"In modern Java (Java 11+), JavaFX was decoupled from the JDK. If you run a class directly extending `Application` in an IDE without module arguments, the JVM throws `Error: JavaFX runtime components are missing`. Having a lightweight launcher class `Main.java` that calls `FlowStateApp.main(args)` cleanly bypasses this check, allowing 1-click execution in IntelliJ IDEA or Eclipse."*
+
 ---
 
 ## 🚀 4. How to Run the App
 
-```bash
-# Launch the desktop UI
-mvn javafx:run
-
-# Run the automated test suite
-mvn test
-```
+1. **In IntelliJ IDEA / Eclipse**:
+   - Right-click `Main.java` -> click **Run 'Main.main()'**
+2. **From Terminal**:
+   ```bash
+   mvn javafx:run
+   ```
+3. **Run Automated Unit Tests**:
+   ```bash
+   mvn test
+   ```
