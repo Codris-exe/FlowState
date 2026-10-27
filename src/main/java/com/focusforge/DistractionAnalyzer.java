@@ -38,7 +38,6 @@ public class DistractionAnalyzer {
 
     private boolean isDistracting(String name) {
         return name.contains("discord") || name.contains("steam") || name.contains("spotify")
-                || name.contains("epicgames") || name.contains("netflix") || name.contains("tiktok")
-                || name.contains("telegram");
+                || name.contains("epicgames") || name.contains("netflix") || name.contains("telegram");
     }
 }

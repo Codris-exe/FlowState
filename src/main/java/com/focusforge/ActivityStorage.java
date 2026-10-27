@@ -93,8 +93,8 @@ public class ActivityStorage {
         }
     }
 
-    public Activity save(Activity activity) {
-        if (activity == null) return null;
+    public void save(Activity activity) {
+        if (activity == null) return;
         lock.writeLock().lock();
         try {
             List<Activity> all = loadActivities();
@@ -103,7 +103,6 @@ public class ActivityStorage {
             }
             all.add(activity);
             saveAll(all);
-            return activity;
         } finally {
             lock.writeLock().unlock();
         }

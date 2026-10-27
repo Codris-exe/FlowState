@@ -1,14 +1,11 @@
 package com.focusforge;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 
 public class Activity implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
 
     public enum Category {
         PRODUCTIVE, NEUTRAL, DISTRACTING
@@ -59,22 +56,41 @@ public class Activity implements Serializable {
         return minutes + "m " + (durationSeconds % 60) + "s";
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getApplicationName() { return applicationName; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getWindowTitle() { return windowTitle; }
+    public String getApplicationName() {
+        return applicationName;
+    }
 
-    public Instant getStartedAt() { return startedAt; }
+    public String getWindowTitle() {
+        return windowTitle;
+    }
 
-    public void setEndedAt(Instant endedAt) { this.endedAt = endedAt; }
+    public Instant getStartedAt() {
+        return startedAt;
+    }
 
-    public long getDurationSeconds() { return durationSeconds; }
-    public void setDurationSeconds(long durationSeconds) { this.durationSeconds = durationSeconds; }
+    public void setEndedAt(Instant endedAt) {
+        this.endedAt = endedAt;
+    }
 
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
+    public long getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(long durationSeconds) {
+        this.durationSeconds = durationSeconds;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
 
     @Override
     public boolean equals(Object o) {
